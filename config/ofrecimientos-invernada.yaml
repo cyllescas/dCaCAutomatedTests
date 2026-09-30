@@ -1,0 +1,102 @@
+feature:
+  id: ofrecimientos-invernada
+  name: Ofrecimientos de invernada — legacy
+  description: >-
+    Validar en stage.dcac.ar el formulario legacy de ofrecimiento de
+    Invernada/Cría, incluyendo los campos generales y los campos dinámicos que
+    dependen de la categoría seleccionada.
+  objective: >-
+    Como cliente o representante, recorrer categorías representativas y
+    combinaciones válidas, inválidas y de límite del ofrecimiento legacy.
+    Verificar campos obligatorios, dependencias de cría y servicio, envío
+    exitoso, número de lote, estado Pendientes de publicación e integridad del
+    ofrecimiento visible para el usuario y el Admin cuando sea posible.
+  sut:
+    base_url: https://stage.dcac.ar/
+  knowledge:
+    - knowledge/README.md
+    - knowledge/glossary.md
+    - knowledge/invernada.md
+    - knowledge/ofrecimientos-invernada-exploration.md
+    - knowledge/ofrecimientos-migracion.md
+    - knowledge/users-and-permissions.md
+    - knowledge/companies.md
+    - knowledge/open-questions.md
+    - knowledge/test-data-catalog.md
+    - knowledge/testing-procedures.md
+  scope:
+    include:
+      - "Cliente o representante: Cotizar > Invernada/Cría"
+      - Selección de sociedad y establecimiento existentes
+      - Creación de sociedadad y establecimiento nuevos
+      - "Campos comunes: sociedad, establecimiento, video, cantidad, categoría, peso, segmentación, raza, informes, aclaraciones y plazo de venta"
+      - "Categorías simples: Terneros, Terneras, Novillos, MEJ y Toros"
+      - "Categorías mixtas: Terneros y Terneras, Novillitos y Vaquillonas"
+      - "Categorías con cría: Vaca con cría, Vaca CUT con cría y Vaquillonas con cría"
+      - Categorías preñadas y sus ramas de Tipo de servicio
+      - Vaca de invernada y Vaquillonas para madre
+      - Validación de obligatorios, campos deshabilitados y dependencias dinámicas
+      - Envío, confirmación, número de lote y Pendientes de publicación
+      - Integridad observable en legajo/listado Admin si la pantalla carga correctamente
+    exclude:
+      - Cambios o paridad con React; se cubren en ofrecimientos-invernada-react
+      - Cotizaciones, publicación, venta, carga, liquidación y Compra Inmediata
+      - Acceso a APIs privadas, base de datos o código interno del SUT
+      - Inventar obligatoriedad cuando el Excel sólo marca un campo como solicitado
+  preconditions:
+    - Usuario cliente o representante autenticado con variables de entorno.
+    - Sociedad vendedora y establecimiento de prueba disponibles.
+    - Datos de prueba por categoría sin identificadores reales ni secretos.
+    - Explorar cada categoría antes de diseñar automatización y capturar selectores de sus ramas dinámicas.
+  exploration:
+    coverage:
+      - positive
+      - negative
+      - boundary
+      - validation
+      - data-integrity
+      - permission
+      - navigation
+      - api-discovery
+  automation:
+    functional_area: invernada_offers_legacy
+    suites: [regression, smoke]
+    tags: ["@invernada", "@ofrecimientos", "@legacy"]
+    data_policy:
+      - Usar variables de entorno y datos dinámicos.
+      - No hardcodear credenciales, CUIT, nombres reales ni IDs compartidos.
+      - Mantener selectores en Page Objects y la intención funcional en specs.
+      - Guardar screenshots, videos y reportes bajo artifacts/.
+
+  discovery_contract:
+    required_outputs: [field_inventory, validation_matrix, dependency_matrix, combination_matrix, selector_inventory, evidence_index]
+    required_case_types: [positive, negative, validation, boundary, data-integrity, permission, navigation]
+
+  automation_contract:
+    require_case_for_each_include: true
+    require_test_for_each_automatable_case: true
+    forbid_unobserved_selectors: true
+    allowed_unautomated_reasons: [manual_only, blocked_by_open_question, missing_authorized_data, missing_observed_selector, out_of_scope]
+
+  scope_catalog:
+    - id: INV-SCOPE-001
+      description: Acceso al formulario legacy de Invernada/Cría
+      risk: high
+    - id: INV-SCOPE-002
+      description: Sociedad y establecimiento existentes o nuevos
+      risk: high
+    - id: INV-SCOPE-003
+      description: Campos comunes y datos generales
+      risk: high
+    - id: INV-SCOPE-004
+      description: Categorías y campos dinámicos
+      risk: high
+    - id: INV-SCOPE-005
+      description: Validaciones, límites y estados de controles
+      risk: high
+    - id: INV-SCOPE-006
+      description: Envío y Pendientes de publicación
+      risk: critical
+    - id: INV-SCOPE-007
+      description: Integridad observable en legajo Admin
+      risk: critical

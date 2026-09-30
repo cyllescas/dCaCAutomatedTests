@@ -1,0 +1,10 @@
+node_modules/
+.env
+cypress.env.json
+cypress.env.json.disabled
+artifacts/
+playwright-report/
+test-results/
+.playwright-mcp/
+cypress/screenshots/
+cypress/videos/

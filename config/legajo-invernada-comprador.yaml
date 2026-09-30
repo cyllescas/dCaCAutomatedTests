@@ -1,0 +1,144 @@
+# Configuración del flujo de edición del usuario comprador en el legajo.
+# No incluir credenciales, identificadores de tropas ni datos reales.
+
+feature:
+  id: legajo-invernada-comprador
+  name: Edición del usuario comprador en legajo de Invernada
+  description: >-
+    Validar en el Admin que el usuario comprador de una tropa de Invernada
+    pueda editarse desde la sección Información del comprador cuando la tropa
+    está en Vendidas o en un estado posterior.
+  objective: >-
+    Como usuario Admin autenticado, abrir el legajo de una tropa de Invernada
+    desde Vendidas en adelante, editar el usuario comprador, guardar y
+    comprobar que el usuario seleccionado queda visible y persistido. Validar
+    también la navegación del botón de información junto al usuario, la
+    opción Sin asignar, la permanencia de la sección y la ausencia de errores.
+
+  sut:
+    base_url: https://stage.dcac.ar/
+
+  knowledge:
+    - knowledge/README.md
+    - knowledge/invernada.md
+    - knowledge/users-and-permissions.md
+    - knowledge/open-questions.md
+    - knowledge/test-data-catalog.md
+    - knowledge/testing-procedures.md
+
+  scope:
+    include:
+      - "Admin: Invernada > Vendidas en adelante"
+      - Apertura del legajo de una tropa elegible
+      - Sección "Información del comprador"
+      - Edición y guardado de un usuario comprador
+      - Selección de la opción "Sin asignar"
+      - Redirección del botón "i" asociado al usuario comprador
+      - Persistencia visible del usuario seleccionado inmediatamente después de guardar, sin volver a ingresar al legajo
+      - Permanencia de la sección y ausencia de errores visibles o de consola
+    exclude:
+      - Creación, venta o cambio de estado de la tropa
+      - Alta, baja o modificación de usuarios
+      - Acceso a APIs privadas, base de datos o código interno del SUT
+      - Asumir permisos adicionales no confirmados para editar el comprador
+
+  preconditions:
+    - >-
+      Usuario Admin autenticado mediante variables de entorno; la identidad
+      esperada debe configurarse como DCAC_ADMIN_USERNAME y no guardarse aquí.
+    - >-
+      Tropa de Invernada autorizada, seleccionada dinámicamente, en estado
+      Vendidas o en un estado posterior que exponga el legajo y la sección de
+      Información del comprador.
+    - >-
+      Debe existir al menos un usuario comprador elegible para seleccionar y
+      debe estar disponible la opción observable "Sin asignar".
+    - >-
+      La exploración debe confirmar el listado, el legajo, los controles de
+      edición/guardado, el botón "i" y la URL o destino correcto del botón
+      antes de diseñar la automatización.
+
+  exploration:
+    coverage:
+      - positive
+      - negative
+      - validation
+      - data-integrity
+      - navigation
+      - permission
+      - session
+
+  cases:
+    - id: INV-COMP-001
+      type: positive
+      title: Editar y guardar un usuario comprador
+      steps:
+        - Iniciar sesión como Admin.
+        - Ir a Invernada y abrir Vendidas en adelante.
+        - Abrir el legajo de una tropa elegible.
+        - Presionar Editar en Información del comprador.
+        - Seleccionar un usuario comprador válido y guardar.
+        - Verificar la vista de solo lectura del mismo legajo, sin recargar ni volver a ingresar.
+      expected:
+        - La sección Información del comprador permanece visible.
+        - El usuario seleccionado coincide con el usuario mostrado inmediatamente después de guardar.
+        - No aparecen errores visibles ni errores de consola asociados a la acción.
+    - id: INV-COMP-002
+      type: validation
+      title: Guardar la opción Sin asignar
+      steps:
+        - Abrir la edición de Información del comprador.
+        - Seleccionar la opción Sin asignar.
+        - Guardar y verificar la vista de solo lectura del mismo legajo.
+      expected:
+        - La selección sin asignar impacta inmediatamente en la vista de solo lectura.
+        - La sección no desaparece ni muestra un valor anterior.
+        - No aparecen errores visibles ni errores de consola asociados a la acción.
+    - id: INV-COMP-003
+      type: navigation
+      title: Navegar desde el botón de información del usuario
+      steps:
+        - Abrir la sección Información del comprador con un usuario asignado.
+        - Presionar el botón "i" ubicado junto al usuario.
+      expected:
+        - La aplicación redirige a la página correcta del usuario comprador.
+        - La URL, encabezado o identificador visible permite confirmar el destino.
+        - La navegación no produce una pantalla en blanco ni errores.
+    - id: INV-COMP-004
+      type: negative
+      title: Mantener la integridad de la sección durante edición y guardado
+      steps:
+        - Abrir y cerrar la edición sin cambios.
+        - Editar el usuario, cancelar si existe esa acción y volver a editar la sección en el mismo legajo.
+        - Guardar una selección válida.
+      expected:
+        - La sección Información del comprador sigue disponible en todos los estados y después de guardar.
+        - Cancelar no persiste cambios y guardar sí persiste el valor seleccionado.
+        - No se observan errores de UI ni de consola.
+
+  automation:
+    functional_area: invernada_legajo_buyer
+    suites: [regression, smoke]
+    tags: ["@invernada", "@legajo", "@comprador", "@admin"]
+    data_policy:
+      - Usar DCAC_ADMIN_USERNAME y el secreto correspondiente desde configuración local o CI.
+      - Resolver dinámicamente la tropa y los usuarios compradores autorizados.
+      - No hardcodear credenciales, identificadores de tropa, IDs de usuario ni datos reales.
+      - Mantener los selectores observados dentro de Page Objects y la intención funcional en specs.
+      - Guardar screenshots, videos y reportes bajo artifacts/.
+
+  discovery_contract:
+    required_outputs:
+      - field_inventory
+      - validation_matrix
+      - dependency_matrix
+      - combination_matrix
+      - selector_inventory
+      - evidence_index
+    required_case_types: [positive, negative, validation, data-integrity, permission, navigation]
+
+  automation_contract:
+    require_case_for_each_include: true
+    require_test_for_each_automatable_case: true
+    forbid_unobserved_selectors: true
+    allowed_unautomated_reasons: [manual_only, blocked_by_open_question, missing_authorized_data, missing_observed_selector, out_of_scope]

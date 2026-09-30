@@ -1,0 +1,93 @@
+# Plantilla para nuevos features de QA.
+# Copiar este archivo como config/<feature-id>.yaml y reemplazar todos los
+# valores entre <...>. No agregar credenciales, secretos ni datos reales.
+
+feature:
+  # Identificador estable, en minúsculas y con guiones. Ejemplo: login-dcac
+  id: <feature-id>
+  name: <nombre-visible-del-feature>
+  description: >-
+    <Descripción breve del comportamiento observable que se validará.>
+  objective: >-
+    <Objetivo funcional: quién realiza qué acción y qué resultado observable
+    se espera validar.>
+
+  sut:
+    base_url: https://stage.dcac.ar/
+
+  # Incluir sólo archivos necesarios para este feature.
+  knowledge:
+    - knowledge/README.md
+    - knowledge/open-questions.md
+    # - knowledge/<contexto-relevante>.md
+
+  scope:
+    include:
+      - <Flujo o funcionalidad incluida>
+      - <Rol, pantalla o transición de estado incluida>
+    exclude:
+      - <Flujo explícitamente fuera de alcance>
+      - <Integración, dato o acción que no debe ejecutarse>
+
+  # Condiciones necesarias antes de explorar. No guardar credenciales aquí.
+  preconditions:
+    - <Rol y estado inicial requerido>
+    - <Datos dinámicos o variables de entorno requeridos>
+    - <Permisos, configuración o registros previos necesarios>
+
+  exploration:
+    # Sólo usar categorías que correspondan al riesgo del feature.
+    coverage:
+      - positive
+      - negative
+      - boundary
+      - validation
+      - data-integrity
+      - permission
+      - navigation
+      # - session
+      # - api-discovery
+
+  automation:
+    # Nombre usado para agrupar specs y mantener trazabilidad.
+    functional_area: <functional-area>
+    suites:
+      - regression
+      # - smoke
+      # - sanity
+    tags:
+      - "@<feature-tag>"
+    data_policy:
+      - Usar variables de entorno y datos dinámicos.
+      - No hardcodear credenciales, secretos, identificadores ni datos reales.
+      - No acceder a APIs privadas, base de datos ni código interno del SUT.
+      - Guardar screenshots, videos y reportes bajo artifacts/.
+
+  # Contrato de completitud consumido por planner, designer y generator.
+  discovery_contract:
+    required_outputs:
+      - field_inventory
+      - validation_matrix
+      - dependency_matrix
+      - combination_matrix
+      - selector_inventory
+      - evidence_index
+    required_case_types:
+      - positive
+      - negative
+      - validation
+      - boundary
+      - data-integrity
+      - permission
+      - navigation
+
+  automation_contract:
+    require_case_for_each_include: true
+    require_test_for_each_automatable_case: true
+    forbid_unobserved_selectors: true
+    allowed_unautomated_reasons:
+      - manual_only
+      - blocked_by_open_question
+      - missing_authorized_data
+      - missing_observed_selector
+      - out_of_scope

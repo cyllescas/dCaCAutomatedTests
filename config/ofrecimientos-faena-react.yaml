@@ -1,0 +1,67 @@
+feature:
+  id: ofrecimientos-faena-react
+  name: Ofrecimientos de faena — React
+  description: >-
+    Validar el ofrecimiento de una tropa de faena en react-stage.dcac.ar y
+    comprobar sus resultados observables en Mis Operaciones y en la vista administrativa legacy.
+  objective: >-
+    Como cliente o representante, explorar y validar el formulario React de
+    Faena con categorías y combinaciones válidas e inválidas, verificando que
+    los datos enviados, el número de lote, el estado Pendientes de publicación
+    y el legajo administrativo sean observables.
+  sut:
+    base_url: https://react-stage.dcac.ar/
+  knowledge:
+    - knowledge/README.md
+    - knowledge/glossary.md
+    - knowledge/faena.md
+    - knowledge/ofrecimientos-migracion.md
+    - knowledge/users-and-permissions.md
+    - knowledge/companies.md
+    - knowledge/open-questions.md
+    - knowledge/test-data-catalog.md
+    - knowledge/testing-procedures.md
+  scope:
+    include:
+      - "Cliente o representante: acceso a Cotizar > Faena en React"
+      - Selección de sociedad y establecimiento existentes
+      - Creación de sociedadad y establecimiento nuevos
+      - Campos observados del formulario y validaciones visibles
+      - Campos obligatorios
+      - Formualario vacío
+      - Envío de un ofrecimiento y confirmación visible
+      - Número de lote y navegación a Mis Operaciones > Faena > Pendientes de publicación
+      - Combinaciones de flete, terminación y destino
+      - Integridad del ofrecimiento completo en el legajo administrativo
+      - Exploración de selectores y trazabilidad para Page Objects y specs
+    exclude:
+      - Crear automáticamente planes o specs antes de completar la exploración
+      - Publicación, venta, carga, faenado, liquidación y Compra Inmediata
+      - Asumir que los campos de legacy existen en React sin selector observado
+      - Acceso a APIs privadas, base de datos o código interno del SUT
+      - Notificaciones reales y datos personales o credenciales compartidas
+  preconditions:
+    - Iniciar sesiÃ³n en react-stage.dcac.ar; si un acceso visible deriva a login stage, volver a react-stage y continuar por URL directa.
+    - Usuario cliente o representante autenticado con variables de entorno; no guardar credenciales.
+    - Sociedad y establecimiento de prueba disponibles o flujo de alta habilitado.
+    - Mantener la URL React como SUT; no incluir comparación con legacy.
+    - Registrar como no automatizable todo campo sin selector observado.
+  exploration:
+    coverage:
+      - positive
+      - negative
+      - boundary
+      - validation
+      - data-integrity
+      - permission
+      - navigation
+      - api-discovery
+  automation:
+    functional_area: faena_offers_react
+    suites: [regression, smoke]
+    tags: ["@faena", "@ofrecimientos", "@react"]
+    data_policy:
+      - Usar variables de entorno y datos dinámicos.
+      - No hardcodear credenciales, CUIT, nombres reales ni IDs compartidos.
+      - Mantener selectores en Page Objects y la intención funcional en specs.
+      - Guardar screenshots, videos y reportes bajo artifacts/.

@@ -1,0 +1,71 @@
+feature:
+  id: ofrecimientos-invernada-react
+  name: Ofrecimientos de invernada — React
+  description: >-
+    Validar en react-stage.dcac.ar el formulario React de Invernada/Cría y
+    documentar su comportamiento frente al contrato legacy por categoría.
+  objective: >-
+    Como cliente o representante, explorar las categorías y dependencias
+    dinámicas del formulario React, identificar campos presentes, ausentes,
+    reubicados o con comportamiento diferente, y validar los flujos de envío,
+    confirmación, número de lote, Pendientes de publicación y persistencia
+    observable en legajo/listado. Los hallazgos no confirmados deben quedar
+    como preguntas abiertas o casos no automatizables.
+  sut:
+    base_url: https://react-stage.dcac.ar/
+    comparison_url: https://stage.dcac.ar/
+  knowledge:
+    - knowledge/README.md
+    - knowledge/glossary.md
+    - knowledge/invernada.md
+    - knowledge/ofrecimientos-migracion.md
+    - knowledge/users-and-permissions.md
+    - knowledge/companies.md
+    - knowledge/open-questions.md
+    - knowledge/test-data-catalog.md
+    - knowledge/testing-procedures.md
+  scope:
+    include:
+      - "Cliente o representante: acceso a Cotizar > Invernada/Cría en React"
+      - Selección de sociedad y establecimiento existentes
+      - Creación de sociedadad y establecimiento nuevos
+      - Matriz de categorías simples, mixtas, con cría, preñadas, MEJ y Toros
+      - "Dependencias de Tipo de servicio: Inseminación, Servicio natural e Inseminación + repaso"
+      - "Campos de cría: edad, peso promedio y uniformidad"
+      - "Zona, Garrapatas/Mio Mio, Balanza y Distancia a la balanza"
+      - "Segmentación y comportamiento de cantidad en categorías de Cría"
+      - "Edad y su unidad en Vaquillonas con cría y MEJ"
+      - "Video, fechas de destete/capado y datos que llegan al legajo"
+      - "Validaciones visibles, confirmación, número de lote y Pendientes de publicación"
+      - "Comparación observable contra stage legacy sin exigir paridad no documentada"
+    exclude:
+      - Tratar como defecto confirmado la ausencia de campos documentada en el DOCX
+      - Eliminar casos legacy por falta de selector React sin registrar el motivo
+      - Publicación, venta, carga, liquidación y Compra Inmediata
+      - Acceso a APIs privadas, base de datos o código interno del SUT
+      - Notificaciones reales y datos personales o credenciales compartidas
+  preconditions:
+    - Usuario cliente o representante autenticado con variables de entorno.
+    - Sociedad vendedora y establecimiento de prueba disponibles.
+    - Datos de prueba para cada familia de categorías y cada rama de servicio.
+    - Usar legacy sólo como referencia comparativa y no como sustituto del flujo React.
+    - Capturar selector observado para cada caso automatizable; marcar el resto como no automatizable.
+  exploration:
+    coverage:
+      - positive
+      - negative
+      - boundary
+      - validation
+      - data-integrity
+      - permission
+      - navigation
+      - api-discovery
+  automation:
+    functional_area: invernada_offers_react
+    suites: [regression, smoke]
+    tags: ["@invernada", "@ofrecimientos", "@react"]
+    data_policy:
+      - Usar variables de entorno y datos dinámicos.
+      - No hardcodear credenciales, CUIT, nombres reales ni IDs compartidos.
+      - Mantener selectores en Page Objects y la intención funcional en specs.
+      - Guardar screenshots, videos y reportes bajo artifacts/.

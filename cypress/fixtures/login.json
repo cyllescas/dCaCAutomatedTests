@@ -1,0 +1,7 @@
+{
+  "messages": {
+    "invalidEmail": "Direcion de email no valida.",
+    "emptyField": "Este campo es requerido."
+  }
+  
+}

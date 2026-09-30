@@ -1,0 +1,79 @@
+feature:
+  id: ofrecimientos-faena
+  name: Ofrecimientos de faena
+  description: Como cliente, validar el ofrecimiento (cotizar) de un lote de faena y verificar que aparezca en Mis Operaciones > pendientes de publicación. Como admin, validar la aparición del lote en Faena > Ofrecimientos, con los datos correspondientes..
+  objective: >-
+    Como Cliente, cubrir el formulario de ofrecimiento de faena con combinaciones válidas,
+    inválidas y de límite; crear casos con sociedades y establecimientos existentes y crear nuevas sociedades y establecimientos. Verificar que aparezca en Mis Operaciones > pendientes de publicación
+    Como admin, comprobar que la tropa creada conserva los datos enviados, dentro de Faena > Ofrecimientos.
+  sut:
+    base_url: https://stage.dcac.ar/
+  knowledge:
+    - knowledge/README.md
+    - knowledge/glossary.md
+    - knowledge/faena.md
+    - knowledge/companies.md
+    - knowledge/users-and-permissions.md
+    - knowledge/open-questions.md
+    - knowledge/test-data-catalog.md
+    - knowledge/testing-procedures.md
+  scope:
+    include:
+      - Cliente o representante: Cotizar > Faena
+      - Envío de un lote y estado cliente Pendientes de publicación
+      - Admin: Faena > Ofrecimientos
+      - Coincidencia entre formulario y legajo/listado de la tropa
+      - Creación y selección de sociedad vendedora
+      - Creación y selección de establecimiento
+      - Casos con distintas terminaciones Feedlot, Racionado y A campo
+      - Casos con distintos destinos Consumo, Exportación Hilton, Exportación UE y Cuota
+      - Casos con distintos fletes A retirar y Puesto en planta
+      - Campos obligatorios, combinaciones inválidas y valores límite
+      - Descubrimiento de la solicitud API que persiste el ofrecimiento
+      - Campos correlacionados funcionan correctamente.
+    exclude:
+      - Publicación, venta, carga, faenado y liquidación de la tropa
+      - Compra Inmediata de faena
+      - Notificaciones por correo reales
+      - Acceso a base de datos, APIs privadas o código interno del SUT
+  preconditions:
+    - >-
+      El usuario cliente debe estar logueado con credenciales válidas.
+    
+    - >-
+      Resolver dinámicamente un usuario cliente vendedor o representante y sus
+      credenciales mediante variables de entorno; no guardar credenciales en fixtures.
+    - >-
+      El usuario debe poder ofrecer faena; ofrecer no requiere permisos especiales
+      según BR-USR-001 y BR-USR-002.
+    - >-
+      Disponer de una sociedad vendedora existente o crearla desde Perfil > Mis
+      Sociedades > Nueva sociedad. La creación desde Admin también está documentada
+      en Datos > Gestión de sociedades > Crear Sociedad.
+    - >-
+      Disponer de un establecimiento asociado a la sociedad. Su flujo, campos y
+      reglas no están documentados en knowledge: descubrirlo durante exploración y
+      no asumir selectores ni validaciones hasta registrarlos.
+    - >-
+      El usuario admin debe estar loguerse con credenciales válidas.
+    - >-
+      Usuario admin debe consultar Faena > Ofrecimientos.
+  exploration:
+    coverage:
+      - positive
+      - negative
+      - boundary
+      - validation
+      - data-integrity
+      - permission
+      - api-discovery
+      - navigation
+  
+  automation:
+    functional_area: faena_offers
+    suites: [regression, smoke]
+    tags: ["@faena", "@ofrecimientos"]
+    data_policy:
+      - Usar variables de entorno y datos dinámicos.
+      - No hardcodear credenciales, CUIT, nombres reales ni IDs compartidos.
+      - Guardar evidencia bajo artifacts/.

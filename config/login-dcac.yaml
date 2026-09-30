@@ -1,0 +1,27 @@
+feature:
+  id: login-dcac
+  name: Autenticación dCaC
+  description: Validar el inicio de sesión observable en Stage dCaC.
+  objective: Cubrir login exitoso por rol, credenciales inválidas y validaciones visibles.
+  sut:
+    base_url: https://stage.dcac.ar/
+  knowledge:
+    - knowledge/README.md
+    - knowledge/glossary.md
+    - knowledge/users-and-permissions.md
+    - knowledge/open-questions.md
+  scope:
+    include:
+      - Login de cliente, administrador, agente y asociado comercial
+      - Credenciales inválidas y campos obligatorios
+      - Redirección y vista posterior al login
+      - Diferencias observables por rol
+    exclude:
+      - Recuperación de contraseña
+      - Creación de usuarios
+      - Cambios de datos de negocio
+  exploration:
+    coverage: [positive, negative, validation, permission]
+  automation:
+    functional_area: login
+    suites: [regression, smoke]
