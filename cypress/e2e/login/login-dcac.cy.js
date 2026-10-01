@@ -16,7 +16,7 @@ import {
 const invalidEmail = 'invalid-login@example.test'
 const invalidPassword = 'invalid-password-for-test'
 
-describe('Autenticación dCaC', () => {
+describe('Autenticación dCaC - Happy Paths', () => {
   let messages
 
   before(() => {
@@ -66,12 +66,61 @@ describe('Autenticación dCaC', () => {
     verifyLoginSuccessAsCommercialPartner()
   })
 
-  it('TC-LOGIN-005: campos obligatorios', () => {
+  
+})
+describe('Autenticación dCaC - Required fields', () => {
+  let messages
+
+  before(() => {
+    cy.fixture('login').then((loginFixture) => {
+      messages = loginFixture.messages
+    })
+  })
+
+  beforeEach(() => {
+    cy.clearCookies()
+    cy.clearLocalStorage()
+    cy.visit('/')
+  })
+
+  it('TC-LOGIN-005: campos obligatorios - todos vacíos', () => {
     LoginPage.submitButton().click()
 
     verifyUsernameFieldError(messages.emptyField)
     verifyPasswordFieldError(messages.emptyField)
     cy.url().should('include', '/__dcac/login')
+  })
+
+  it('TC-LOGIN-005: campos obligatorios - usuario vacío', () => {
+    fillLoginFields('', invalidPassword)
+    LoginPage.submitButton().click()
+
+    verifyUsernameFieldError(messages.emptyField)
+    cy.url().should('include', '/__dcac/login')
+  })
+
+  it('TC-LOGIN-005: campos obligatorios - usuario vacío', () => {
+    fillLoginFields(invalidEmail, '')
+    LoginPage.submitButton().click()
+
+    verifyPasswordFieldError(messages.emptyField)
+    cy.url().should('include', '/__dcac/login')
+  })
+
+})
+describe('Autenticación dCaC - Invalid data fields', () => {
+  let messages
+
+  before(() => {
+    cy.fixture('login').then((loginFixture) => {
+      messages = loginFixture.messages
+    })
+  })
+
+  beforeEach(() => {
+    cy.clearCookies()
+    cy.clearLocalStorage()
+    cy.visit('/')
   })
 
   it('TC-LOGIN-006: formato de email inválido', () => {
@@ -89,3 +138,4 @@ describe('Autenticación dCaC', () => {
     cy.url().should('include', '/__dcac/login')
   })
 })
+
