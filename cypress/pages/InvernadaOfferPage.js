@@ -1,4 +1,5 @@
 const OPTIONS_LOAD_TIMEOUT = 60000
+const CATEGORY_PLACEHOLDER = 'Seleccionar'
 
 class InvernadaOfferPage {
   societySelect(options) {
@@ -39,6 +40,12 @@ class InvernadaOfferPage {
 
   assertVisibleLabels(labels, description) {
     labels.forEach((label) => this.visibleLabel(label).should('be.visible', `${description}: ${label}`))
+  }
+
+  // Clears the dynamic fields left by a previous category, so label checks
+  // cannot pass on stale content when the page is reused between cases.
+  resetCategory() {
+    return this.categorySelect().select(CATEGORY_PLACEHOLDER)
   }
 
   selectCategory(label) {

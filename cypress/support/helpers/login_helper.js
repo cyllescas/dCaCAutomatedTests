@@ -14,7 +14,7 @@ export function login(username, password) {
 // Reuses the authenticated browser state during the current Cypress run.
 // Keep this separate from `login` because the login suite also exercises
 // invalid credentials and must submit the form every time.
-export function loginWithSession(username, password, expectedRole = 'client') {
+export function loginWithSession(username, password, expectedRole = 'client', { landingPath = '/__dcac/' } = {}) {
     cy.session(
         ['dcac-authenticated-user', expectedRole, username],
         () => {
@@ -36,8 +36,9 @@ export function loginWithSession(username, password, expectedRole = 'client') {
     )
 
     // cy.session restores state but does not leave the application on the
-    // requested page, so put each test back at the authenticated entrypoint.
-    cy.visit('/__dcac/')
+    // requested page, so put each test back at the authenticated entrypoint
+    // (or at the page the caller needs, to avoid an extra navigation).
+    cy.visit(landingPath)
 }
 
 function assertAuthenticatedView(expectedRole) {
