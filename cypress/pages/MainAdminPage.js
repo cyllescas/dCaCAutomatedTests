@@ -9,6 +9,15 @@ class MainAdminPage{
         // `#li_busca > [name="busca"]` hook is no longer present after login.
         return cy.get('input[placeholder="Buscar..."]', {timeout: 60000});
     }
+    navbar(){
+        return cy.get('nav#navbar', { timeout: 60000 });
+    }
+    logoutLink(){
+        return cy.get('a.logout_azul', { timeout: 60000 });
+    }
+    liveBoard(){
+        return cy.get('table#liveBoard', { timeout: 60000 });
+    }
     mainNav(){
         return cy.get('.nav');
     }

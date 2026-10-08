@@ -76,59 +76,86 @@ export function skipWhenCredentialsAreMissing(testContext, credentials, role) {
     }
 }
 
-export function fillLoginFields(username, password){
+export function fillLoginFields(username, password) {
     if (username) {
-    LoginPage.usernameField().should('be.visible', { timeout: 60000 }).type(username)
-  }
-
-  if (password) {
-    LoginPage.passwordField().should('be.visible', { timeout: 60000 }).type(password)
-  }
-    
-}
-
-export function verifyLoginSuccessAsClient(){
-    cy.url({ timeout: 60000 }).should('include', '/__dcac/')
-    MainClientPage.mainBody().should('be.visible')
-    MainClientPage.mainTitleTendenciasDelMercado().should('be.visible')
-    
-}
-
-export function verifyLoginSuccessAsAdmin(){
-    cy.url({ timeout: 60000 }).should('include', '/__dcac/')  
-    MainAdminPage.mainBrowserBar().should('be.visible')
-    MainAdminPage.mainNav().should('be.visible')
-    MainAdminPage.logoutButton().should('be.visible')
+        LoginPage.usernameField().should('be.visible', { timeout: 60000 }).type(username)
+    }
+    if (password) {
+        LoginPage.passwordField().should('be.visible', { timeout: 60000 }).type(password)
+    }
 
 }
 
-export function verifyLoginSuccessAsAgent(){
-    cy.url({ timeout: 60000 }).should('include', '/__dcac/')
-    MainAgentPage.mainBody().should('be.visible')
-    MainAgentPage.mainTitleTendenciasDelMercado().should('be.visible')
-    MainAgentPage.mainTopNavbar().should('be.visible')
-
-}
-export function verifyLoginSuccessAsCommercialPartner(){
-    cy.url({ timeout: 60000 }).should('include', '/__dcac/')
-    MainCommercialPartnerPage.mainBody().should('be.visible')
-    MainCommercialPartnerPage.mainBrowserBar().should('be.visible')
-    MainCommercialPartnerPage.mainCompaniesList().should('be.visible')
+export function verifyLoginSuccessAsClient() {
+    cy.location('pathname', { timeout: 60000 }).should('eq', '/__dcac/')
+    cy.title({ timeout: 60000 }).should('include', 'Inicio')
+    MainClientPage.topBanner().should('be.visible')
+    MainClientPage.userMenu().should('be.visible')
+    MainClientPage.mainTitleTendenciasDelMercado()
+        .should('be.visible')
+        .and('contain.text', 'Tendencias del mercado')
 }
 
-export function verifyInvalidCredentialsAlert(){
+export function verifyLoginSuccessAsAdmin() {
+    // The redirect to the admin shell can take a few seconds.
+    cy.location('pathname', { timeout: 60000 }).should('eq', '/')
+    cy.title({ timeout: 60000 }).should('include', 'Admin DCAC')
+    MainAdminPage.navbar().should('be.visible')
+    MainAdminPage.logoutLink().should('be.visible')
+    MainAdminPage.liveBoard().should('be.visible')
+}
+
+export function verifyLoginSuccessAsAgent() {
+    cy.location('pathname', { timeout: 60000 }).should('eq', '/__dcac/')
+    cy.title({ timeout: 60000 }).should('include', 'Inicio')
+    MainAgentPage.topBanner().should('be.visible')
+    MainAgentPage.userMenu().should('be.visible')
+    MainAgentPage.clientsNavLink().should('be.visible')
+}
+
+export function verifyLoginSuccessAsCommercialPartner() {
+    cy.location('pathname', { timeout: 60000 }).should('eq', '/')
+    cy.title({ timeout: 60000 }).should('include', 'Admin DCAC')
+    MainCommercialPartnerPage.navbar().should('be.visible')
+    MainCommercialPartnerPage.logoutLink().should('be.visible')
+    MainCommercialPartnerPage.societiesSection().should('be.visible')
+    MainCommercialPartnerPage.liveBoard().should('not.exist')
+}
+
+// Register before submitting the form. Call assertInvalidCredentialsAlertFired()
+// afterwards to fail when the alert never fires.
+export function verifyInvalidCredentialsAlert() {
+    const alertMessages = []
+    cy.wrap(alertMessages, { log: false }).as('loginAlertMessages')
     cy.on('window:alert', (text) => {
-    expect(text).to.equal('Usuario o contraseña incorrectos')
-})
+        alertMessages.push(text)
+    })
 }
 
-export function verifyUsernameFieldError(message){
-    LoginPage.userFieldError().should('have.text', message)
+export function assertInvalidCredentialsAlertFired(expectedMessage = 'Usuario o contraseña incorrectos') {
+    cy.get('@loginAlertMessages', { timeout: 60000 }).should((alertMessages) => {
+        expect(alertMessages, 'window:alert fired').to.have.length.greaterThan(0)
+        expect(alertMessages[0]).to.equal(expectedMessage)
+    })
 }
 
-export function verifyPasswordFieldError(message){
-    LoginPage.passwordFieldError().should('have.text', message)
+export function verifyUsernameFieldError(message) {
+    LoginPage.userFieldError().should('be.visible').and('have.text', message)
 }
 
+export function verifyPasswordFieldError(message) {
+    LoginPage.passwordFieldError().should('be.visible').and('have.text', message)
+}
 
+export function verifyUsernameFieldHasNoVisibleError() {
+    // Passes if the error label does not exist or exists but is hidden.
+    LoginPage.userFieldErrorIfPresent().should(($el) => {
+        expect($el.filter(':visible'), 'visible username error labels').to.have.length(0)
+    })
+}
 
+export function verifyPasswordFieldHasNoVisibleError() {
+    LoginPage.passwordFieldErrorIfPresent().should(($el) => {
+        expect($el.filter(':visible'), 'visible password error labels').to.have.length(0)
+    })
+}
