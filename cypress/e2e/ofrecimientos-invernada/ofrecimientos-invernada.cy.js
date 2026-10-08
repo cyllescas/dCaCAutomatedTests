@@ -2,9 +2,34 @@ import InvernadaOfferPage from '../../pages/InvernadaOfferPage'
 import { credentialsFor, loginWithSession, skipWhenCredentialsAreMissing, verifyLoginSuccessAsClient } from '../../support/helpers/login_helper'
 import { openInvernadaOfferForm, selectExistingInvernadaLocation } from '../../support/helpers/invernada_offer_helper'
 
-describe('Ofrecimientos de invernada legacy @invernada @ofrecimientos @legacy @regression @smoke', () => {
-  const credentials = credentialsFor('TEST_CLIENT_USERNAME', 'TEST_CLIENT_PASSWORD')
+const credentials = credentialsFor('TEST_CLIENT_USERNAME', 'TEST_CLIENT_PASSWORD')
 
+const CATEGORIES = {
+  CALVES: 'Terneros',
+  CALVES_AND_HEIFER_CALVES: 'Terneros y Terneras',
+  STEERS_AND_HEIFERS: 'Novillitos y Vaquillonas',
+  COWS_WITH_CALF: 'Vacas con cría',
+  PREGNANT_COWS: 'Vacas preñadas',
+  HEIFERS_FOR_BREEDING: 'Vaquillonas para madre',
+  BULLS: 'Toros',
+}
+
+const SERVICE_TYPES = {
+  NATURAL: 'Servicio Natural',
+}
+
+const ZONES = {
+  LUCHA: 'Lucha',
+  SUCIA: 'Sucia',
+}
+
+const FIELD_LABELS = {
+  BULLS_ORIGIN: 'Origen de los toros',
+  GENDER_SPLIT: ['Machos', 'Hembras'],
+  NATURAL_SERVICE: ['Inicio del servicio', 'Fin del servicio', 'Raza de servicio', 'Origen de los toros'],
+}
+
+describe('Ofrecimientos de invernada legacy @invernada @ofrecimientos @legacy @regression @smoke', () => {
   beforeEach(function () {
     skipWhenCredentialsAreMissing(this, credentials, 'cliente')
     cy.visit('/__dcac/')
@@ -23,7 +48,7 @@ describe('Ofrecimientos de invernada legacy @invernada @ofrecimientos @legacy @r
   it('valida los campos obligatorios observados con el formulario vacío', () => {
     openInvernadaOfferForm()
     selectExistingInvernadaLocation()
-    InvernadaOfferPage.categorySelect().select('Terneros')
+    InvernadaOfferPage.categorySelect().select(CATEGORIES.CALVES)
     InvernadaOfferPage.submitEmptyOffer()
     InvernadaOfferPage.visibleValidationMessages()
   })
@@ -55,13 +80,13 @@ describe('Ofrecimientos de invernada legacy @invernada @ofrecimientos @legacy @r
 })
 
 const dynamicCategoryCases = [
-  { label: 'Terneros', labels: [] },
-  { label: 'Terneros y Terneras', labels: ['Machos', 'Hembras'] },
-  { label: 'Novillitos y Vaquillonas', labels: ['Machos', 'Hembras'] },
-  { label: 'Vacas con cría', labels: ['Edad', 'Peso promedio'] },
-  { label: 'Vacas preñadas', labels: ['Tipo de Servicio'] },
-  { label: 'Vaquillonas para madre', labels: ['Definidas'] },
-  { label: 'Toros', labels: ['Apto para Vaquillonas', 'Origen de los toros'] },
+  { label: CATEGORIES.CALVES, labels: [] },
+  { label: CATEGORIES.CALVES_AND_HEIFER_CALVES, labels: FIELD_LABELS.GENDER_SPLIT },
+  { label: CATEGORIES.STEERS_AND_HEIFERS, labels: FIELD_LABELS.GENDER_SPLIT },
+  { label: CATEGORIES.COWS_WITH_CALF, labels: ['Edad', 'Peso promedio'] },
+  { label: CATEGORIES.PREGNANT_COWS, labels: ['Tipo de Servicio'] },
+  { label: CATEGORIES.HEIFERS_FOR_BREEDING, labels: ['Definidas'] },
+  { label: CATEGORIES.BULLS, labels: ['Apto para Vaquillonas', FIELD_LABELS.BULLS_ORIGIN] },
 ]
 
 describe('Campos dinámicos del ofrecimiento de invernada @invernada @ofrecimientos @legacy @regression', () => {
@@ -82,17 +107,17 @@ describe('Campos dinámicos del ofrecimiento de invernada @invernada @ofrecimien
   })
 
   it('muestra las dependencias de Servicio Natural para una categoría preñada', () => {
-    InvernadaOfferPage.selectCategory('Vacas preñadas')
+    InvernadaOfferPage.selectCategory(CATEGORIES.PREGNANT_COWS)
     InvernadaOfferPage.serviceSection().should('be.visible')
-    InvernadaOfferPage.selectServiceType('Servicio Natural')
-    InvernadaOfferPage.serviceBranchFields().should('have.length.at.least', 2)
+    InvernadaOfferPage.selectServiceType(SERVICE_TYPES.NATURAL)
+    InvernadaOfferPage.assertVisibleLabels(FIELD_LABELS.NATURAL_SERVICE, SERVICE_TYPES.NATURAL)
   })
 
   it('muestra Garrapata y Mio-Mio para Zona Lucha y Sucia', () => {
-    InvernadaOfferPage.selectCategory('Terneros')
-    InvernadaOfferPage.selectZone('Lucha')
+    InvernadaOfferPage.selectCategory(CATEGORIES.CALVES)
+    InvernadaOfferPage.selectZone(ZONES.LUCHA)
     InvernadaOfferPage.sanitaryZoneFields().should('have.length', 2)
-    InvernadaOfferPage.selectZone('Sucia')
+    InvernadaOfferPage.selectZone(ZONES.SUCIA)
     InvernadaOfferPage.sanitaryZoneFields().should('have.length', 2)
   })
 })

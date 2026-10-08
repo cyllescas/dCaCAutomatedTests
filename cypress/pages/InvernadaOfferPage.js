@@ -1,10 +1,12 @@
+const OPTIONS_LOAD_TIMEOUT = 60000
+
 class InvernadaOfferPage {
-  societySelect() {
-    return cy.get('#sociedad_select')
+  societySelect(options) {
+    return cy.get('#sociedad_select', options)
   }
 
-  establishmentSelect() {
-    return cy.get('#estab_soc')
+  establishmentSelect(options) {
+    return cy.get('#estab_soc', options)
   }
 
   categorySelect() {
@@ -40,7 +42,8 @@ class InvernadaOfferPage {
   }
 
   selectCategory(label) {
-    return this.categorySelect().select(label).should('have.value')
+    this.categorySelect().select(label)
+    return this.categorySelect().find('option:selected').should('have.text', label)
   }
 
   selectFirstOption(name) {
@@ -53,10 +56,6 @@ class InvernadaOfferPage {
 
   serviceSection() {
     return cy.get('#informe_servicioDiv')
-  }
-
-  serviceBranchFields() {
-    return cy.get('#fechas_inseminacion, #form_raza_servicio_origen_toros').filter(':visible')
   }
 
   selectServiceType(label) {
@@ -75,22 +74,29 @@ class InvernadaOfferPage {
     const configured = Cypress.env('INVERNADA_SOCIETY_VALUE')
     if (configured) return this.societySelect().select(configured)
 
-    return this.societySelect().find('option').then(($options) => {
-      const option = [...$options].find((item) => item.value && item.value !== 'crear')
-      expect(option, 'available invernada society').to.exist
-      return this.societySelect().select(option.value)
-    })
+    return this.selectFirstLoadedOption(this.societySelect({ timeout: OPTIONS_LOAD_TIMEOUT }), 'available invernada society')
+  }
+
+  // The options load asynchronously; retry until one besides "crear" is present.
+  selectFirstLoadedOption(select, description) {
+    let value
+    return select
+      .should(($select) => {
+        const option = [...$select.find('option')].find((item) => item.value && item.value !== 'crear')
+        expect(option, description).to.exist
+        value = option.value
+      })
+      .then(($select) => cy.wrap($select).select(value))
   }
 
   selectFirstAvailableEstablishment() {
     const configured = Cypress.env('INVERNADA_ESTABLISHMENT_VALUE')
     if (configured) return this.establishmentSelect().select(configured)
 
-    return this.establishmentSelect().should('be.visible').find('option').then(($options) => {
-      const option = [...$options].find((item) => item.value && item.value !== 'crear')
-      expect(option, 'available invernada establishment').to.exist
-      return this.establishmentSelect().select(option.value)
-    })
+    return this.selectFirstLoadedOption(
+      this.establishmentSelect({ timeout: OPTIONS_LOAD_TIMEOUT }).should('be.visible'),
+      'available invernada establishment',
+    )
   }
 
   societyModal() {
