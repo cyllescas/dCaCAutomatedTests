@@ -61,7 +61,7 @@ feature:
     - Usuario cliente o representante autenticado con variables de entorno.
     - Sociedad vendedora y establecimiento de prueba disponibles.
     - Datos de prueba por categoría sin identificadores reales ni secretos.
-    - "Videos de prueba en cypress/fixtures/: video_ofrecimiento.mp4 (29 s) y video_ofrecimiento_corto.mp4 (9 s)."
+    - "Videos de prueba locales, no versionados (cypress/fixtures/*.mp4 en .gitignore): video_ofrecimiento.mp4 (29 s) y video_ofrecimiento_corto.mp4 (9 s). Rutas por defecto en cypress/fixtures/; sobrescribibles con INVERNADA_VIDEO_PATH e INVERNADA_VIDEO_SHORT_PATH."
     - "Autorizado crear ofrecimientos reales en stage (17 por corrida) sin borrarlos; frecuencia pendiente de validar con el líder."
     - "Raza y Plazo de venta: usar la primera opción disponible cuando el caso no los indique."
     - Explorar cada categoría antes de diseñar automatización y capturar selectores de sus ramas dinámicas.
