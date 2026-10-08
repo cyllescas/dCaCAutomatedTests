@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx cypress run:*)",
+      "Bash(npm run qa:validate:*)",
+      "Bash(node scripts/*)",
+      "mcp__playwright-test__*"
+    ],
+    "deny": [
+      "Read(./.env)"
+    ]
+  },
+  "enabledMcpjsonServers": ["playwright-test"]
+}

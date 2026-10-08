@@ -1,3 +1,8 @@
+---
+name: result-analysis
+description: Analiza resultados de ejecución y determina la causa probable de un fallo sin clasificarlo automáticamente como defecto. Usar ante tests fallidos.
+---
+
 # Result Analysis Skill
 
 ## Purpose

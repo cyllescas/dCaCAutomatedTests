@@ -1,3 +1,8 @@
+---
+name: exploratory-testing
+description: Guía la exploración de la app real con una misión de testing y herramientas de browser. Usar en la fase de exploración del flujo QA.
+---
+
 # Exploratory Testing Skill
 
 ## Purpose

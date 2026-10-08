@@ -1,3 +1,8 @@
+---
+name: qa-report
+description: Genera un reporte QA conciso de lo probado para un feature. Usar al cerrar el flujo QA.
+---
+
 # QA Report Skill
 
 ## Purpose

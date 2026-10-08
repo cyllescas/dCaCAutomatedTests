@@ -1,3 +1,8 @@
+---
+name: playwright
+description: Uso de Playwright para exploración en browser y recolección de evidencia. Usar durante la exploración con Playwright MCP.
+---
+
 # Playwright Skill
 
 ## Purpose

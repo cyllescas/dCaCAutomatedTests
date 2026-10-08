@@ -3,7 +3,7 @@
 ## Propósito
 
 Este repositorio contiene una capa de QA black-box para `https://stage.dcac.ar/`.
-Codex coordina la exploración y Cypress ejecuta pruebas reproducibles. La
+Claude Code coordina la exploración y Cypress ejecuta pruebas reproducibles. La
 automatización existente en `cypress/` es parte del producto del repositorio y
 debe extenderse, no reemplazarse.
 
@@ -49,3 +49,11 @@ testing, no como reglas de negocio.
 
 Guardar screenshots, videos y reportes locales bajo `artifacts/`. Los reportes
 de fallos deben clasificarse inicialmente como `UNKNOWN` hasta analizarse.
+
+## Orquestación
+
+El flujo se dispara con `/qa-flow config/<feature>.yaml` (ver
+`.claude/commands/qa-flow.md`). Subagentes en `.claude/agents/`
+(`playwright_test_planner`, `playwright_test_generator`, `playwright_test_healer`)
+y skills en `.claude/skills/`. El servidor MCP `playwright-test` está definido
+en `.mcp.json`. Los contratos se validan con `npm run qa:validate`.

@@ -1,7 +1,9 @@
-name = "playwright_test_planner"
-description = "Use this agent when you need to create comprehensive test plan for a web application or website"
-sandbox_mode = "read-only"
-developer_instructions = """
+---
+name: playwright_test_planner
+description: Use this agent when you need to create comprehensive test plan for a web application or website
+tools: Read, Glob, Grep, mcp__playwright-test__browser_click, mcp__playwright-test__browser_close, mcp__playwright-test__browser_console_messages, mcp__playwright-test__browser_drag, mcp__playwright-test__browser_evaluate, mcp__playwright-test__browser_file_upload, mcp__playwright-test__browser_handle_dialog, mcp__playwright-test__browser_hover, mcp__playwright-test__browser_navigate, mcp__playwright-test__browser_navigate_back, mcp__playwright-test__browser_network_request, mcp__playwright-test__browser_network_requests, mcp__playwright-test__browser_press_key, mcp__playwright-test__browser_run_code_unsafe, mcp__playwright-test__browser_select_option, mcp__playwright-test__browser_snapshot, mcp__playwright-test__browser_take_screenshot, mcp__playwright-test__browser_type, mcp__playwright-test__browser_wait_for, mcp__playwright-test__planner_setup_page, mcp__playwright-test__planner_save_plan
+---
+
 You are an expert web test planner with extensive experience in quality assurance, user experience testing, and test
 scenario design. Your expertise includes functional testing, edge case identification, and comprehensive test coverage
 planning.
@@ -55,9 +57,3 @@ Write the complete test plan in Spanish. The only exception is the
 Automation Handoff section: keep its heading and all of its content in
 English. Technical identifiers, selectors, URLs, code, and literal UI text may
 remain unchanged when necessary for accuracy.
-"""
-
-[mcp_servers.playwright-test]
-command = "node"
-args = ["scripts/run-playwright-mcp.cjs"]
-enabled_tools = ["browser_click", "browser_close", "browser_console_messages", "browser_drag", "browser_evaluate", "browser_file_upload", "browser_handle_dialog", "browser_hover", "browser_navigate", "browser_navigate_back", "browser_network_request", "browser_network_requests", "browser_press_key", "browser_run_code_unsafe", "browser_select_option", "browser_snapshot", "browser_take_screenshot", "browser_type", "browser_wait_for", "planner_setup_page", "planner_save_plan"]

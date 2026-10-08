@@ -1,3 +1,8 @@
+---
+name: test-design
+description: Convierte escenarios descubiertos en casos de prueba estructurados dentro del plan Markdown aprobado. Usar al diseñar el plan.
+---
+
 # Test Design Skill
 
 ## Purpose

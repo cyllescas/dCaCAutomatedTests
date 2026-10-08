@@ -1,13 +1,12 @@
 {
   "name": "dcac-agentic-qa",
   "version": "1.0.0",
-  "description": "QA agentic black-box para deCampoACampo con Cypress y Codex",
+  "description": "QA agentic black-box para deCampoACampo con Cypress y Claude Code",
   "license": "ISC",
   "author": "dCaC",
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "qa:agents:init": "playwright init-agents --loop=codex",
     "test": "cypress run",
     "test:all": "cypress run",
     "test:regression": "cypress run --env grepTags=@regression",
@@ -20,10 +19,8 @@
     "@playwright/test": "^1.62.1",
     "@types/node": "^26.4.0",
     "cypress": "^15.2.0",
+    "dotenv": "^18.0.5",
     "tsx": "^4.23.12",
     "typescript": "^7.0.2"
-  },
-  "dependencies": {
-    "dotenv": "^17.4.2"
   }
 }

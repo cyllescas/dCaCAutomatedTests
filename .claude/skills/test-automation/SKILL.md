@@ -1,3 +1,8 @@
+---
+name: test-automation
+description: Transforma casos aprobados en una suite de regresión Cypress JavaScript mantenible. Usar al generar tests tras la aprobación del plan.
+---
+
 # Test Automation Skill
 
 ## Purpose

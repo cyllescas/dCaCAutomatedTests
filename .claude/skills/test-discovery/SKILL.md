@@ -1,3 +1,8 @@
+---
+name: test-discovery
+description: Identifica qué probar de un feature antes de diseñar casos o automatizar. Usar al inicio del flujo QA.
+---
+
 # Test Discovery Skill
 
 ## Purpose

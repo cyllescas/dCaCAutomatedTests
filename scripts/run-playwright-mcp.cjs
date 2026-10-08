@@ -4,7 +4,7 @@ const path = require('node:path');
 
 const command = process.platform === 'win32' ? 'npx.cmd' : 'npx';
 const secretsPath = path.resolve(process.cwd(), '.env');
-const initPagePath = path.resolve(process.cwd(), 'scripts', 'playwright-init-page.ts');
+const initPagePath = path.resolve(process.cwd(), 'scripts', 'playwright-init-page.mjs');
 const child = spawn(command, [
   'playwright',
   'mcp',
