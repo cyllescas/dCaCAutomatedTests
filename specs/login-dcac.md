@@ -7,6 +7,7 @@
 - **SUT:** `https://stage.dcac.ar/`
 - **Suites previstas:** smoke, regression
 - **Estado del plan:** pendiente de aprobación humana
+- **Última exploración:** 2026-10-02, Stage, los cuatro roles y el formulario sin sesión.
 
 ## Contexto y trazabilidad
 
@@ -19,7 +20,7 @@ Reglas relevantes:
 - `BR-USR-006` a `BR-USR-009`: un CR generalmente tiene permiso 6, comparte vista con Admin y se asocia a sociedades.
 - `BR-USR-011` a `BR-USR-014`: representante y cliente comparten vista general, con asociaciones de sociedad distintas.
 
-Las preguntas `OQ-002` y `OQ-004` impiden convertir los permisos/perfiles 4 y 6 o la diferencia Admin/CR en requisitos no observados. Las diferencias por rol se registrarán como evidencia observable, sin asumir una matriz de permisos.
+Las preguntas `OQ-002` y `OQ-004` impiden convertir los permisos/perfiles 4 y 6 o la diferencia Admin/CR en requisitos no observados. Las diferencias por rol se registran como evidencia observable, sin asumir una matriz de permisos.
 
 ## Alcance
 
@@ -29,13 +30,34 @@ Excluye recuperación de contraseña, creación de usuarios y cambios de datos d
 
 ## Hallazgos de exploración
 
-1. La navegación a la base redirige a `https://stage.dcac.ar/__dcac/login?`.
-2. La página muestra el heading `Iniciá sesión`.
-3. Los controles observables son un textbox para `Email`, un textbox para `Contraseña` y el botón `INGRESAR`.
-4. Al enviar ambos campos vacíos, ambos muestran `Este campo es requerido.`.
-5. Con un email sin formato válido se muestra `Direcion de email no valida.`.
-6. El comportamiento de credenciales inválidas requiere ejecutar con email válido sintácticamente y una contraseña no válida; el diálogo no quedó expuesto en el snapshot exploratorio, por lo que debe verificarse durante la automatización.
-7. Hay variables locales para las cuentas de los cuatro roles y la contraseña; no se incluyen valores en documentación ni fixtures.
+### Formulario (sin sesión)
+
+1. La navegación a la base redirige a `https://stage.dcac.ar/__dcac/login?`, título `deCampoaCampo`, heading `Iniciá sesión`.
+2. Controles: `Email` (`#maillog`), `Contraseña` (`#password`, ícono de mostrar `#icono`) y `INGRESAR` (`#ingresar_login`). El formulario (`#login_modal`) usa `novalidate` y validación de jQuery Validate.
+3. Mensajes observados:
+
+   | Escenario | Resultado observado |
+   |---|---|
+   | Ambos campos vacíos | Email y Contraseña muestran `Este campo es requerido.`; ambos inputs reciben clase `error`. |
+   | Sólo contraseña completa | Email muestra `Este campo es requerido.`. |
+   | Sólo email completo | Contraseña muestra `Este campo es requerido.`. |
+   | Email `noesunemail` + contraseña | Email muestra `Direcion de email no valida.` (grafía literal). |
+   | Email válido ficticio + contraseña incorrecta ficticia | `window.alert` nativo `Usuario o contraseña incorrectos`; la URL permanece en `/__dcac/login`; el formulario se vacía; no hay modal ni toast en el DOM. |
+
+4. Tras corregir un campo, los labels de error quedan en el DOM pero ocultos: asertar visibilidad, no existencia.
+
+### Vista posterior por rol
+
+| Rol | URL | Título | Elementos distintivos observados |
+|---|---|---|---|
+| Cliente | `/__dcac/` | `Inicio` | `.top-banner`; menú de usuario `#div_log_out` (popup `#modal_log_out` con `Ver perfil` y `Salir`); navegación Operaciones, Precios, Consultas, Perfil, Clima, Comprar, Cotizar, DCP REACT; contenido `Tendencias del mercado` e `Invernada - Tropas para ofertar`. |
+| Agente | `/__dcac/` | `Inicio` | Igual que cliente, más el ítem `Clientes` (`/__dcac/misClientes`); no se observó `DCP REACT`. |
+| Administrador | `/` | `Admin DCAC ->` | `nav#navbar.navbar-fixed-top`; `a.logout_azul` (`?logout`) dentro de `div.bloque_user_azul`; botones INVERNADA, FAENA, MAG, TRANSPORTES, OFERTAS; `table#liveBoard` (actividad). |
+| Asociado comercial | `/` | `Admin DCAC ->` | Mismo shell que Administrador (`nav#navbar`, `a.logout_azul`); sin `table#liveBoard`; sección `#app-gestion_sociedades` (`Gestión Sociedades`, filas `#sociedad_<id>`). |
+
+Cierre de sesión confirmado en los cuatro roles (vuelve a `/__dcac/login`). Cliente y agente: abrir `#div_log_out` y activar `a[href="/__dcac/logout"]`. Administrador y asociado comercial: `a.logout_azul`.
+
+Los errores de consola de JS/CSS y recursos 404 observados en Stage se ignoran mientras el flujo principal de login se cumpla. Los enlaces de `Ayuda`, `Consultas` y `DCP REACT` llevan tokens en la URL: no se registran.
 
 ## Riesgos
 
@@ -44,7 +66,7 @@ Excluye recuperación de contraseña, creación de usuarios y cambios de datos d
 | Login válido no redirige o deja una vista incorrecta | Critical | Bloquea el acceso a toda la aplicación según rol. |
 | Credenciales inválidas permiten acceso o no informan el error | High | Impacto de autenticación y seguridad observable. |
 | Validaciones de campos obligatorios/formato no aparecen | High | Impide recuperación clara de errores de usuario. |
-| Las vistas posteriores de Admin, cliente, agente o asociado comercial no corresponden | High | Puede indicar autorización o navegación incorrecta. |
+| Las vistas posteriores no corresponden al rol | High | Puede indicar autorización o navegación incorrecta. |
 | La cuenta de prueba o Stage no está disponible | Medium | Impide distinguir falla de aplicación de falla de ambiente. |
 
 ## Casos de prueba
@@ -53,67 +75,88 @@ Excluye recuperación de contraseña, creación de usuarios y cambios de datos d
 
 - **Tipo:** positive, smoke, regression
 - **Prioridad:** Critical
-- **Precondiciones:** Stage disponible; cuenta configurada en `TEST_CLIENT_USERNAME`/`USER_CLIENT` y contraseña local válida; sesión limpia.
+- **Automatizable:** SÍ
+- **Precondiciones:** Stage disponible; cuenta en `TEST_CLIENT_USERNAME`/`USER_CLIENT` y contraseña local válida; sesión limpia.
 - **Pasos:**
   1. Abrir `https://stage.dcac.ar/`.
-  2. Completar `Email` con la cuenta de cliente configurada.
-  3. Completar `Contraseña` con la contraseña configurada.
-  4. Activar `INGRESAR`.
-- **Resultado esperado:** la URL contiene `/__dcac/`; se muestra la vista principal de cliente y el título `Tendencias del mercado`.
-- **Falla si:** permanece en login, aparece un error de autenticación con credenciales válidas o la vista principal esperada no es visible.
+  2. Completar `Email` y `Contraseña` con la cuenta de cliente configurada.
+  3. Activar `INGRESAR`.
+- **Resultado esperado:** la URL pasa a `/__dcac/` (esperar el cambio de URL de forma explícita); título `Inicio`; son visibles `.top-banner`, `#div_log_out` y el título de sección `Tendencias del mercado`.
+- **Falla si:** permanece en login, aparece un error de autenticación con credenciales válidas o la vista no es visible.
 
 ### TC-LOGIN-002 — Login exitoso como administrador
 
 - **Tipo:** positive, smoke, regression
 - **Prioridad:** Critical
-- **Precondiciones:** cuenta local válida en `TEST_ADMIN_USERNAME`/`USER_ADMIN`; sesión limpia.
-- **Pasos:** repetir navegación, carga de credenciales y activación de `INGRESAR` con la cuenta Admin.
-- **Resultado esperado:** la URL contiene `/__dcac/` y son visibles la barra principal, navegación principal y control de cierre de sesión.
-- **Falla si:** no redirige o la vista Admin no se presenta.
+- **Automatizable:** SÍ
+- **Precondiciones:** cuenta en `TEST_ADMIN_USERNAME`/`USER_ADMIN`; sesión limpia.
+- **Pasos:** repetir el flujo con la cuenta Admin.
+- **Resultado esperado:** la URL pasa a la raíz `/`; título `Admin DCAC ->`; son visibles `nav#navbar`, `a.logout_azul` y `table#liveBoard`.
 - **Nota:** no se exige permiso 4; `BR-USR-005` lo describe sólo como general.
 
 ### TC-LOGIN-003 — Login exitoso como agente
 
 - **Tipo:** positive, smoke, regression
 - **Prioridad:** High
-- **Precondiciones:** cuenta local válida en `TEST_AGENT_USERNAME`/`USER_AGENT`; sesión limpia.
-- **Pasos:** repetir el flujo de login con la cuenta de agente.
-- **Resultado esperado:** la URL contiene `/__dcac/`; son visibles el cuerpo principal, `Tendencias del mercado` y la barra superior.
+- **Automatizable:** SÍ
+- **Precondiciones:** cuenta en `TEST_AGENT_USERNAME`/`USER_AGENT`; sesión limpia.
+- **Pasos:** repetir el flujo con la cuenta de agente.
+- **Resultado esperado:** la URL pasa a `/__dcac/`; título `Inicio`; son visibles `.top-banner`, `#div_log_out` y el enlace de navegación `Clientes` (`/__dcac/misClientes`).
+- **Nota:** que `Clientes` distinga al agente es una observación, no una regla (ver preguntas abiertas).
 
 ### TC-LOGIN-004 — Login exitoso como asociado comercial
 
 - **Tipo:** positive, smoke, regression
 - **Prioridad:** High
-- **Precondiciones:** cuenta local válida en `TEST_COMMERCIAL_PARTNER_USERNAME`/`USER_COMMERCIAL_PARTNER`; sesión limpia.
-- **Pasos:** repetir el flujo de login con la cuenta de asociado comercial.
-- **Resultado esperado:** la URL contiene `/__dcac/`; son visibles el cuerpo principal, la barra principal y la lista de sociedades.
-- **Nota:** `OQ-004` queda explícitamente abierta; no se equipara asociado comercial con CR sin evidencia.
+- **Automatizable:** SÍ
+- **Precondiciones:** cuenta en `TEST_COMMERCIAL_PARTNER_USERNAME`/`USER_COMMERCIAL_PARTNER`; sesión limpia.
+- **Pasos:** repetir el flujo con la cuenta de asociado comercial.
+- **Resultado esperado:** la URL pasa a `/`; título `Admin DCAC ->`; son visibles `nav#navbar`, `a.logout_azul` y `#app-gestion_sociedades`; no existe `table#liveBoard`.
+- **Nota:** `OQ-004` queda abierta; no se equipara asociado comercial con CR sin evidencia. Título y URL no distinguen a este rol del Admin.
 
-### TC-LOGIN-005 — Campos obligatorios
+### TC-LOGIN-005 — Campos obligatorios (ambos vacíos)
 
 - **Tipo:** validation, negative
 - **Prioridad:** High
+- **Automatizable:** SÍ
 - **Precondiciones:** sesión limpia en login.
 - **Pasos:** activar `INGRESAR` sin completar ningún campo.
-- **Resultado esperado:** `Email` y `Contraseña` muestran `Este campo es requerido.` y no se inicia sesión.
+- **Resultado esperado:** `label.error[for="maillog"]` y `.error-password` visibles con `Este campo es requerido.`; la URL permanece en `/__dcac/login`.
 
 ### TC-LOGIN-006 — Formato de email inválido
 
 - **Tipo:** validation, negative, boundary
 - **Prioridad:** Medium
-- **Precondiciones:** sesión limpia en login.
-- **Pasos:** completar `Email` con un valor sin formato de email, completar `Contraseña` con cualquier valor no sensible y activar `INGRESAR`.
-- **Resultado esperado:** el campo email muestra `Direcion de email no valida.` y no se inicia sesión.
-- **Nota:** se conserva literalmente el texto observable de Stage, incluida la grafía `Direcion`.
+- **Automatizable:** SÍ
+- **Pasos:** completar `Email` con `noesunemail`, `Contraseña` con un valor no sensible y activar `INGRESAR`.
+- **Resultado esperado:** `label.error[for="maillog"]` visible con `Direcion de email no valida.`; no se inicia sesión.
+- **Nota:** se conserva literalmente la grafía `Direcion`.
 
 ### TC-LOGIN-007 — Credenciales inválidas
 
 - **Tipo:** negative, error_handling
 - **Prioridad:** High
-- **Precondiciones:** Stage disponible; usar email sintácticamente válido de prueba y contraseña deliberadamente inválida; no usar una cuenta real ni exponer secretos.
-- **Pasos:** completar ambos campos y activar `INGRESAR`.
-- **Resultado esperado:** el sistema rechaza el acceso, permanece en login y muestra el mensaje observable de credenciales inválidas (o diálogo equivalente); el texto exacto debe capturarse y trazarse durante la ejecución.
-- **Falla si:** se concede acceso o no existe ninguna señal observable de rechazo.
+- **Automatizable:** SÍ
+- **Precondiciones:** email sintácticamente válido ficticio y contraseña ficticia incorrecta; sin cuentas reales ni secretos.
+- **Pasos:** registrar `cy.on('window:alert', ...)` antes de activar `INGRESAR`; completar ambos campos y activar `INGRESAR`.
+- **Resultado esperado:** se dispara un `window.alert` con `Usuario o contraseña incorrectos`; la URL permanece en `/__dcac/login`; el formulario queda vacío.
+- **Falla si:** se concede acceso o el alert nunca se dispara (la aserción debe fallar si el alert no ocurre).
+
+### TC-LOGIN-008 — Falta sólo el email
+
+- **Tipo:** validation, negative
+- **Prioridad:** Medium
+- **Automatizable:** SÍ
+- **Pasos:** completar sólo `Contraseña` y activar `INGRESAR`.
+- **Resultado esperado:** `label.error[for="maillog"]` visible con `Este campo es requerido.`; sin error visible en contraseña; no se inicia sesión.
+
+### TC-LOGIN-009 — Falta sólo la contraseña
+
+- **Tipo:** validation, negative
+- **Prioridad:** Medium
+- **Automatizable:** SÍ
+- **Pasos:** completar sólo `Email` con formato válido y activar `INGRESAR`.
+- **Resultado esperado:** `.error-password` visible con `Este campo es requerido.`; sin error visible en email; no se inicia sesión.
 
 ## Datos, independencia y evidencia
 
@@ -122,43 +165,50 @@ Excluye recuperación de contraseña, creación de usuarios y cambios de datos d
 - Guardar screenshots, videos y reportes bajo `artifacts/`.
 - Todo fallo se clasifica inicialmente como `UNKNOWN` y se analiza considerando autenticación, ambiente, locator, sincronización y aplicación.
 
+## Preguntas abiertas candidatas
+
+- ¿Por qué Admin y asociado comercial entran a `/` (shell `Admin DCAC ->`) y cliente y agente a `/__dcac/`? ¿Qué ocurre al abrir la URL de otro rol? (relacionada con `OQ-002`, `OQ-004`)
+- ¿Es esperado que el agente vea `Clientes` y no `DCP REACT`?
+- ¿Qué alcance de datos corresponde al asociado comercial? Los contadores de Invernada/Faena parecen globales frente a las pocas sociedades visibles.
+- ¿Es intencional la grafía `Direcion`?
+- ¿Un email válido inexistente debe producir el mismo mensaje que una contraseña errónea? Sólo se observó un alert genérico.
+
 ## Automation Handoff
 
-### Existing assets to reuse
+### Observed selectors
 
-- `cypress/pages/LoginPage.js`: `usernameField()`, `passwordField()`, `submitButton()`, `userFieldError()`, `passwordFieldError()`.
-- `cypress/support/helpers/login_helper.js`: `fillLoginFields()`, role-specific success verifications, `verifyInvalidCredentialsAlert()`, and field-error verifications.
-- `cypress/fixtures/login.json`: observable validation messages. Preserve the current literal text.
-- `cypress.config.js`: environment-backed credentials and Stage base URL.
+- Login form: `#maillog` (`input[type=email][name=mail]`), `#password`, `#icono`, `#ingresar_login`, `#login_modal`.
+- Email error: `label.error[for="maillog"]` (also matched by the existing `:nth-child(2) > label.error`). Password error: `label.error.error-password` (existing `.error-password`). Hidden labels remain in the DOM after the field is fixed: assert `be.visible`.
+- Client and agent: `.top-banner`, `#div_log_out`, `#modal_log_out`, `a[href="/__dcac/logout"]` (open the menu first), `img[alt="decampoacampo_logo"]`; agent only: link `Clientes` (`/__dcac/misClientes`).
+- Admin and commercial partner: `nav#navbar.navbar-fixed-top`, `a.logout_azul` (`?logout`) inside `div.bloque_user_azul`; admin only: `table#liveBoard`; commercial partner only: `#app-gestion_sociedades`.
+- The navbar buttons of the admin shell have no id or class; identify them by text only if needed.
 
-### Selector inventory
+### Observed messages and URLs
 
-- Email: `#maillog` (accessible snapshot role: textbox; visible label: `Email`).
-- Password: `#password` (accessible snapshot role: textbox; visible label: `Contraseña`).
-- Submit: `#ingresar_login` (accessible role/name: button `INGRESAR`).
-- Existing validation selectors: `:nth-child(2) > label.error` and `.error-password`; verify against the live DOM before relying on them.
+- `Este campo es requerido.`; `Direcion de email no valida.`; wrong credentials: native `window.alert` `Usuario o contraseña incorrectos`, URL stays `/__dcac/login`, form cleared.
+- Post-login URLs: client and agent `/__dcac/` (title `Inicio`); admin and commercial partner `/` (title `Admin DCAC ->`). The redirect is not immediate: wait explicitly for the URL change.
 
-### Required specs
+### POM ownership
 
-- Create or extend `cypress/e2e/login/login-dcac.cy.js`.
-- Trace each `it` to exactly one approved test case ID: `TC-LOGIN-001` through `TC-LOGIN-007`.
-- Use `cy.session` only if it preserves test independence and does not hide the observable login assertion.
-- Keep selectors and UI mechanics in the Page Object; keep role intent and assertions in the spec.
+- `cypress/pages/LoginPage.js`: form selectors and validation errors.
+- `cypress/pages/Main{Client,Admin,Agent,CommercialPartner}Page.js`: role views. Verify their current selectors against the inventory above before reuse and reconcile differences.
 
-### Environment data
+### Helpers / fixtures / specs
 
-- Client: `TEST_CLIENT_USERNAME` or `USER_CLIENT`; password: corresponding password variable.
-- Admin: `TEST_ADMIN_USERNAME` or `USER_ADMIN`.
-- Agent: `TEST_AGENT_USERNAME` or `USER_AGENT`.
-- Commercial partner: `TEST_COMMERCIAL_PARTNER_USERNAME` or `USER_COMMERCIAL_PARTNER`.
-- Shared password fallback: `PASSWORD` only through Cypress config; never log its value.
-- Invalid credentials: deterministic syntactically valid fake email and non-sensitive invalid password.
+- `cypress/support/helpers/login_helper.js`: `verifyInvalidCredentialsAlert()` registers `cy.on('window:alert')` without proving the alert fired; it must fail if the alert never occurs.
+- `cypress/fixtures/login.json`: keep the literal messages.
+- `cypress/e2e/login/login-dcac.cy.js`: one `it` per approved TC id (`TC-LOGIN-001` to `009`).
+- Spec structure: one outer `describe('Autenticación dCaC')` holding the shared `beforeEach` (clear cookies and storage, visit `/`), with nested `describe` groups: `Login exitoso por rol` (TC-LOGIN-001..004), `Validaciones del formulario` (TC-LOGIN-005, 006, 008, 009) and `Credenciales inválidas` (TC-LOGIN-007). Keep the TC id in each `it` title; do not nest deeper.
 
-### Unsupported or conditional automation
+### Required data
 
-- Role-specific cases are conditional on configured credentials being present and valid in Stage.
-- Exact invalid-credentials message must be confirmed during execution before asserting it. If a browser dialog is used, handle it without exposing its contents in logs.
-- Do not automate undocumented permission assumptions from `OQ-002` or `OQ-004`.
+- `USER_CLIENT`, `USER_ADMIN`, `USER_AGENT`, `USER_COMMERCIAL_PARTNER` (or `TEST_*_USERNAME`) and `PASSWORD` through env/Cypress config only; never printed. Values must have no quotes or trailing commas.
+- Invalid credentials: a fictitious valid-format email and a non-sensitive wrong password.
+
+### Out of scope
+
+- Do not automate undocumented permission assumptions from `OQ-002` or `OQ-004`; do not assert role differences beyond the observed markers.
+- Do not log or persist tokens present in the `Ayuda`, `Consultas` and `DCP REACT` links.
 
 ## Approval gate
 
