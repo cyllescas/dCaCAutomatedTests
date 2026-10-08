@@ -9,8 +9,16 @@ feature:
     Como cliente o representante, recorrer categorías representativas y
     combinaciones válidas, inválidas y de límite del ofrecimiento legacy.
     Verificar campos obligatorios, dependencias de cría y servicio, envío
-    exitoso, número de lote, estado Pendientes de publicación e integridad del
-    ofrecimiento visible para el usuario y el Admin cuando sea posible.
+    exitoso (vista de confirmación sin número de lote), carga de video, listas
+    de opciones, campos condicionales, tropa visible en Mis operaciones /
+    Pendientes de publicación e integridad del ofrecimiento visible para el
+    usuario y el Admin cuando sea posible.
+  cases_file: config/ofrecimientos-invernada-cases.md
+  cases_policy: >-
+    Extender specs/ofrecimientos-invernada.md con los casos de cases_file sin
+    duplicar los TC-INV-* existentes. Los casos marcados "confirmado" son
+    observaciones del usuario sin fuente documentada: registrarlos en
+    knowledge/ como observaciones, no como reglas de negocio.
   sut:
     base_url: https://stage.dcac.ar/
   knowledge:
@@ -30,13 +38,19 @@ feature:
       - Selección de sociedad y establecimiento existentes
       - Creación de sociedadad y establecimiento nuevos
       - "Campos comunes: sociedad, establecimiento, video, cantidad, categoría, peso, segmentación, raza, informes, aclaraciones y plazo de venta"
-      - "Categorías simples: Terneros, Terneras, Novillos, MEJ y Toros"
+      - "Categorías simples: Terneros, Terneras, Novillitos, Vaquillonas, Novillos, Vacas de invernada, MEJ y Toros"
       - "Categorías mixtas: Terneros y Terneras, Novillitos y Vaquillonas"
       - "Categorías con cría: Vaca con cría, Vaca CUT con cría y Vaquillonas con cría"
       - Categorías preñadas y sus ramas de Tipo de servicio
       - Vaca de invernada y Vaquillonas para madre
       - Validación de obligatorios, campos deshabilitados y dependencias dinámicas
-      - Envío, confirmación, número de lote y Pendientes de publicación
+      - "Carga de video: archivo válido (>= 10 s), video corto (9 s), archivo que no es video, envío sin video y reemplazo del video"
+      - "Validaciones de Cantidad (vacía, cero, negativa, no numérica), Segmentación contra la cantidad total y hasta 3 razas"
+      - "Listas de opciones de los selects (Categoría, Marca Líquida, Calidad, Estado Corporal, Tratamiento Nutricional, Zona, Dentición, Tipo de Rodeo, Uniformidad, Tipo de servicio, Inseminación, Razas)"
+      - "Campos condicionales: Destetados/Capados, Zona Lucha/Sucia/Limpia, Tipo de servicio e Inseminación, Machos+Hembras, Plan sanitario"
+      - "Alta de sociedad con CUIT válido e inválido, cierre de formularios sin persistir y autocompletado de Provincia y Partido"
+      - "Envío de las 17 categorías: misma URL, vista de confirmación con el mensaje Su tropa ha sido creada correctamente, enlace Mis operaciones y botón Ingresar nueva tropa; sin número de lote"
+      - Tropa recién ofrecida visible en Mis operaciones > Pendientes de publicación
       - Integridad observable en legajo/listado Admin si la pantalla carga correctamente
     exclude:
       - Cambios o paridad con React; se cubren en ofrecimientos-invernada-react
@@ -47,6 +61,9 @@ feature:
     - Usuario cliente o representante autenticado con variables de entorno.
     - Sociedad vendedora y establecimiento de prueba disponibles.
     - Datos de prueba por categoría sin identificadores reales ni secretos.
+    - "Videos de prueba en cypress/fixtures/: video_ofrecimiento.mp4 (29 s) y video_ofrecimiento_corto.mp4 (9 s)."
+    - "Autorizado crear ofrecimientos reales en stage (17 por corrida) sin borrarlos; frecuencia pendiente de validar con el líder."
+    - "Raza y Plazo de venta: usar la primera opción disponible cuando el caso no los indique."
     - Explorar cada categoría antes de diseñar automatización y capturar selectores de sus ramas dinámicas.
   exploration:
     coverage:
@@ -100,3 +117,12 @@ feature:
     - id: INV-SCOPE-007
       description: Integridad observable en legajo Admin
       risk: critical
+    - id: INV-SCOPE-008
+      description: Carga de video del ofrecimiento
+      risk: high
+    - id: INV-SCOPE-009
+      description: Listas de opciones de los selects del formulario
+      risk: medium
+    - id: INV-SCOPE-010
+      description: Campos condicionales por selección
+      risk: high
