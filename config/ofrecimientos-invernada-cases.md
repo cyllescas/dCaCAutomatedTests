@@ -21,8 +21,28 @@ los `TC-INV-*` existentes, y mapear cada caso a un ID del plan.
   líder del equipo.
 - **MEJ (Caso 46):** reproducido a mano, no agrega campos nuevos respecto de los comunes.
   Posible bug, pendiente de conversar con el líder → `OQ-043`.
-- **Video:** se agregan los casos 12.1 a 12.4. El mínimo de 10 s es un dato del usuario,
-  no confirmado en la app.
+- **Video:** se agregan los casos 12.1 a 12.4 (y 12.5 el 2026-10-09). El mínimo de 10 s
+  era un dato del usuario y la app lo desmintió: el video de 9 s es válido.
+
+## Correcciones del usuario (2026-10-09)
+
+- **Diferidos** los casos 15, 16 (Cantidad 0 y negativa), 17 (Cantidad no numérica), 21
+  (segmentación que no suma) y 67 (Machos + Hembras que no suman): hoy esas validaciones no
+  existen, pero deberían; se agregan cuando la app las implemente. No se automatiza el
+  comportamiento actual.
+- **Video:** la validación de formato y duración solo ocurre si primero se seleccionan
+  sociedad y establecimiento, y se carga el video con el botón real "Adjuntar Filmación".
+  El mensaje real se ve en `#seccion_archivos`, no en la barra de progreso. Video inválido
+  de prueba: `video_ofrecimiento_4seg.mp4` (4 s). El de 9 s se toma como válido.
+- **CUIT inválido (caso 4):** la validación la hace una API que devuelve error, pero la UI
+  no lo muestra; el usuario lo reportará como defecto. No se espera un mensaje.
+- **Confirmación post-envío:** el enlace es "operaciones" y el botón "INGRESAR NUEVA TROPA"
+  (confirmado por el usuario).
+- **Flujo de envío a verificar:** completar formulario > Ofrecer Tropa > capturar `tropaId`
+  (respuesta de `.../modulo_crearLote/index.php`) > "operaciones" > localizar la tropa por
+  su id > comparar datos cargados con los visibles. Para los 17 perfiles no se piden más
+  datos que los ya definidos.
+- Varios campos descritos como "select" son **radios** (error de redacción, aceptado).
 
 ## Referencias usadas en todos los casos
 
@@ -37,8 +57,9 @@ los `TC-INV-*` existentes, y mapear cada caso a un ID del plan.
   Distancia): completar con cualquier valor válido observado.
 - **Casos donde se completa el ofrecimiento (botón `Ofrecer Tropa`):** se mantiene la misma
   URL y cambia la vista por la confirmación descrita arriba.
-- **Videos de prueba:** `video_ofrecimiento.mp4` (29 s, M4V) y `video_ofrecimiento_corto.mp4`
-  (9 s, MP4), ambos en `cypress/fixtures/`.
+- **Videos de prueba** (`cypress/fixtures/`, no versionados): `video_ofrecimiento.mp4` (29 s,
+  M4V, válido), `video_ofrecimiento_corto.mp4` (9 s, MP4, válido) y `video_ofrecimiento_4seg.mp4`
+  (4 s, rechazado).
 
 ---
 
@@ -166,15 +187,24 @@ los `TC-INV-*` existentes, y mapear cada caso a un ID del plan.
 - Datos: `cypress/fixtures/video_ofrecimiento.mp4` (29 s)
 - Notas: Es un M4V de iTunes; si falla, registrar el formato como posible causa.
 
-### Caso 12.1: Video de menos de 10 segundos
+### Caso 12.1: Video corto rechazado
 - Funcionalidad: Video (botón "Adjuntar Filmación")
 - Prioridad: alta
-- Precondiciones: Formulario abierto
-- Pasos: Adjuntar el video corto.
-- Esperado: Observar si la app lo acepta o lo rechaza y con qué mensaje.
-- Certeza: no sé
+- Precondiciones: Formulario abierto con sociedad y establecimiento seleccionados
+- Pasos: Adjuntar el video de 4 segundos con el botón real.
+- Esperado: La UI muestra el rechazo en `#seccion_archivos`.
+- Certeza: a confirmar (observado el 2026-10-09)
+- Datos: `cypress/fixtures/video_ofrecimiento_4seg.mp4` (4 s)
+- Notas: El servidor falla por una excepción de AWS MediaConvert, no por una regla de duración con mensaje propio (OQ-051).
+
+### Caso 12.5: Video de 9 segundos es válido
+- Funcionalidad: Video (botón "Adjuntar Filmación")
+- Prioridad: media
+- Precondiciones: Formulario abierto con sociedad y establecimiento seleccionados
+- Pasos: Adjuntar el video de 9 segundos con el botón real.
+- Esperado: Éxito: "Video cargado correctamente".
+- Certeza: confirmado por el usuario (2026-10-09)
 - Datos: `cypress/fixtures/video_ofrecimiento_corto.mp4` (9 s)
-- Notas: El mínimo de 10 s lo indicó el usuario; no está confirmado en la app.
 
 ### Caso 12.2: Archivo que no es un video
 - Funcionalidad: Video (botón "Adjuntar Filmación")
@@ -224,7 +254,7 @@ los `TC-INV-*` existentes, y mapear cada caso a un ID del plan.
 - Datos: ninguno
 - Cobertura existente: TC-INV-002 (formulario vacío muestra `Debe completar el campo Cantidad`); este caso aísla el campo con el resto completo — actualizar
 
-### Caso 15: Cantidad cero
+### Caso 15: Cantidad cero — DIFERIDO (2026-10-09: la app aún no valida; agregar cuando se implemente)
 - Funcionalidad: Cantidad
 - Prioridad: media
 - Precondiciones: Formulario abierto
@@ -233,7 +263,7 @@ los `TC-INV-*` existentes, y mapear cada caso a un ID del plan.
 - Certeza: no sé
 - Datos: 0
 
-### Caso 16: Cantidad negativa
+### Caso 16: Cantidad negativa — DIFERIDO (2026-10-09: la app aún no valida; agregar cuando se implemente)
 - Funcionalidad: Cantidad
 - Prioridad: media
 - Precondiciones: Formulario abierto
@@ -242,7 +272,7 @@ los `TC-INV-*` existentes, y mapear cada caso a un ID del plan.
 - Certeza: no sé
 - Datos: -5
 
-### Caso 17: Cantidad no numérica
+### Caso 17: Cantidad no numérica — DIFERIDO (2026-10-09: la app aún no valida; agregar cuando se implemente)
 - Funcionalidad: Cantidad
 - Prioridad: media
 - Precondiciones: Formulario abierto
@@ -280,7 +310,7 @@ los `TC-INV-*` existentes, y mapear cada caso a un ID del plan.
 - Certeza: confirmado
 - Datos: Datos base
 
-### Caso 21: Segmentación que no suma la cantidad total
+### Caso 21: Segmentación que no suma la cantidad total — DIFERIDO (2026-10-09: la app aún no valida; agregar cuando se implemente)
 - Funcionalidad: Segmentación de la tropa (Cabeza, Cuerpo, Cola)
 - Prioridad: alta
 - Precondiciones: Formulario abierto, Cantidad 50, Peso promedio 250
@@ -634,7 +664,7 @@ Cobertura existente: TC-INV-003/004/005 verifican solo algunas etiquetas por cat
 - Certeza: confirmado
 - Datos: ninguno
 
-### Caso 67: Machos + Hembras frente a la Cantidad
+### Caso 67: Machos + Hembras frente a la Cantidad — DIFERIDO (2026-10-09: la app aún no valida; agregar cuando se implemente)
 - Funcionalidad: Segmentación de la tropa > Cantidad Machos, Cantidad Hembras
 - Prioridad: media
 - Precondiciones: Formulario abierto, categoría Terneros y Terneras, Cantidad 50

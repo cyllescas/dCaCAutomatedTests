@@ -40,10 +40,10 @@ commitear secretos.
 
 Los videos de prueba de invernada no se versionan (`cypress/fixtures/*.mp4` está
 en `.gitignore`). Cada persona debe tenerlos en su máquina y puede indicar otra
-ruta con `INVERNADA_VIDEO_PATH` (video válido, >= 10 s) e
-`INVERNADA_VIDEO_SHORT_PATH` (video corto, < 10 s). Por defecto se usan
+ruta con `INVERNADA_VIDEO_PATH` (video válido) e
+`INVERNADA_VIDEO_SHORT_PATH` (video rechazado por la app, 4 s). Por defecto se usan
 `cypress/fixtures/video_ofrecimiento.mp4` y
-`cypress/fixtures/video_ofrecimiento_corto.mp4`.
+`cypress/fixtures/video_ofrecimiento_4seg.mp4`.
 
 El launcher de Playwright MCP inyecta el login desde `.env` mediante un init
 page; nunca imprime los valores. El rol predeterminado es `client`. Para otra

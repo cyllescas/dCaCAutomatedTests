@@ -44,13 +44,13 @@ feature:
       - Categorías preñadas y sus ramas de Tipo de servicio
       - Vaca de invernada y Vaquillonas para madre
       - Validación de obligatorios, campos deshabilitados y dependencias dinámicas
-      - "Carga de video: archivo válido (>= 10 s), video corto (9 s), archivo que no es video, envío sin video y reemplazo del video"
-      - "Validaciones de Cantidad (vacía, cero, negativa, no numérica), Segmentación contra la cantidad total y hasta 3 razas"
+      - "Carga de video con sociedad y establecimiento seleccionados: válido (29 s y 9 s), rechazado (4 s), archivo que no es video, envío sin video y reemplazo o eliminación del video"
+      - "Cantidad (válida, vacía, no numérica), Segmentación y hasta 3 razas (casos 15, 16, 17, 21 y 67 diferidos hasta que la app implemente las validaciones de rango y de suma)"
       - "Listas de opciones de los selects (Categoría, Marca Líquida, Calidad, Estado Corporal, Tratamiento Nutricional, Zona, Dentición, Tipo de Rodeo, Uniformidad, Tipo de servicio, Inseminación, Razas)"
       - "Campos condicionales: Destetados/Capados, Zona Lucha/Sucia/Limpia, Tipo de servicio e Inseminación, Machos+Hembras, Plan sanitario"
       - "Alta de sociedad con CUIT válido e inválido, cierre de formularios sin persistir y autocompletado de Provincia y Partido"
       - "Envío de las 17 categorías: misma URL, vista de confirmación con el mensaje Su tropa ha sido creada correctamente, enlace Mis operaciones y botón Ingresar nueva tropa; sin número de lote"
-      - Tropa recién ofrecida visible en Mis operaciones > Pendientes de publicación
+      - Tropa recién ofrecida: capturar tropaId (respuesta de modulo_crearLote) y localizarla en operaciones > Pendientes de publicación, comparando datos cargados con los visibles
       - Integridad observable en legajo/listado Admin si la pantalla carga correctamente
     exclude:
       - Cambios o paridad con React; se cubren en ofrecimientos-invernada-react
@@ -61,7 +61,7 @@ feature:
     - Usuario cliente o representante autenticado con variables de entorno.
     - Sociedad vendedora y establecimiento de prueba disponibles.
     - Datos de prueba por categoría sin identificadores reales ni secretos.
-    - "Videos de prueba locales, no versionados (cypress/fixtures/*.mp4 en .gitignore): video_ofrecimiento.mp4 (29 s) y video_ofrecimiento_corto.mp4 (9 s). Rutas por defecto en cypress/fixtures/; sobrescribibles con INVERNADA_VIDEO_PATH e INVERNADA_VIDEO_SHORT_PATH."
+    - "Videos de prueba locales, no versionados (cypress/fixtures/*.mp4 en .gitignore): video_ofrecimiento.mp4 (29 s, válido), video_ofrecimiento_corto.mp4 (9 s, válido) y video_ofrecimiento_4seg.mp4 (4 s, rechazado). Rutas por defecto en cypress/fixtures/; sobrescribibles con INVERNADA_VIDEO_PATH e INVERNADA_VIDEO_SHORT_PATH."
     - "Autorizado crear ofrecimientos reales en stage (17 por corrida) sin borrarlos; frecuencia pendiente de validar con el líder."
     - "Raza y Plazo de venta: usar la primera opción disponible cuando el caso no los indique."
     - Explorar cada categoría antes de diseñar automatización y capturar selectores de sus ramas dinámicas.
@@ -93,7 +93,7 @@ feature:
     require_case_for_each_include: true
     require_test_for_each_automatable_case: true
     forbid_unobserved_selectors: true
-    allowed_unautomated_reasons: [manual_only, blocked_by_open_question, missing_authorized_data, missing_observed_selector, out_of_scope]
+    allowed_unautomated_reasons: [manual_only, blocked_by_open_question, missing_authorized_data, missing_observed_selector, out_of_scope, deferred_until_app_validation]
 
   scope_catalog:
     - id: INV-SCOPE-001
