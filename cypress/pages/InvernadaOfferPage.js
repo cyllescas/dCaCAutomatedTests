@@ -1,5 +1,29 @@
+import { BASE_OFFER } from '../support/data/invernada_offer_data'
+import { waitForPartialLot } from '../support/helpers/invernada_trace_helper'
+
 const OPTIONS_LOAD_TIMEOUT = 60000
 const CATEGORY_PLACEHOLDER = 'Seleccionar'
+const VIDEO_RESULT_TIMEOUT = 90000
+// The CUIT rejection has no visible signal (OQ-048), so the negative checks
+// give the API this long to answer before asserting nothing happened.
+const REJECTION_SETTLE_MS = 3000
+const VISIBLE_CONTROLS = 'input:visible, select:visible, textarea:visible, label:visible'
+
+const normalize = (text) => String(text).replace(/\s+/g, ' ').trim().toLowerCase()
+
+// Options that carry a real choice (no empty value, "0" or "Seleccionar ..." placeholder).
+const selectableOptions = ($select) => [...$select.find('option')]
+  .filter((option) => option.value && option.value !== '0' && option.textContent.trim() && !/^seleccionar/i.test(option.textContent.trim()))
+  .map((option) => ({ value: option.value, text: option.textContent.trim() }))
+
+const selectableTexts = ($select) => selectableOptions($select).map((option) => option.text)
+
+function formatDate(daysAgo) {
+  const date = new Date()
+  date.setDate(date.getDate() - daysAgo)
+  const pad = (value) => String(value).padStart(2, '0')
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`
+}
 
 class InvernadaOfferPage {
   societySelect(options) {
@@ -89,7 +113,7 @@ class InvernadaOfferPage {
     let value
     return select
       .should(($select) => {
-        const option = [...$select.find('option')].find((item) => item.value && item.value !== 'crear')
+        const option = [...$select.find('option')].find((item) => item.value && item.value !== '0' && item.value !== 'crear')
         expect(option, description).to.exist
         value = option.value
       })
@@ -115,6 +139,8 @@ class InvernadaOfferPage {
   }
 
   openNewSociety() {
+    // The options load asynchronously; "crear" is not selectable before that.
+    this.waitForSocietyOptions()
     return this.societySelect().select('crear').then(() => this.societyModal().should('be.visible'))
   }
 
@@ -142,7 +168,8 @@ class InvernadaOfferPage {
     const cuit = Cypress.env('INVERNADA_NEW_SOCIETY_CUIT') || this.validRuntimeCuit(suffix)
 
     this.openNewSociety()
-    this.societyModal().find('#razonsocial').clear().type(name)
+    // Assert the typed value so a truncated name fails here, not after saving.
+    this.societyModal().find('#razonsocial').clear().type(name).should('have.value', name)
     this.societyModal().find('#cuit').clear().type(cuit)
     return { name }
   }
@@ -187,6 +214,371 @@ class InvernadaOfferPage {
       const option = [...$element.find('option')].find((item) => item.textContent.trim().toLowerCase().includes(expected))
       return cy.wrap($element).select(option.value).should('have.value', option.value)
     })
+  }
+
+  // ---- Society and establishment forms (TC-INV-012 to TC-INV-016) ----------
+
+  fillSocietyForm(name, cuit) {
+    this.openNewSociety()
+    this.societyModal().find('#razonsocial').clear().type(name)
+    this.societyModal().find('#cuit').clear().type(cuit)
+  }
+
+  // CUIT with the check digit deliberately wrong (11 digits, same prefix).
+  invalidRuntimeCuit(seed) {
+    const valid = this.validRuntimeCuit(seed)
+    const wrongCheck = (Number(valid.slice(-1)) + 1) % 10
+    return `${valid.slice(0, -1)}${wrongCheck}`
+  }
+
+  clickSaveSociety() {
+    return this.societyModal().find('#aceptar').click()
+  }
+
+  closeSocietyModal() {
+    return this.societyModal().find('#cerrar').click()
+  }
+
+  closeEstablishmentModal() {
+    return this.establishmentModal().find('#cerrar').click()
+  }
+
+  assertSocietyModalClosed() {
+    return cy.get('body').should(($body) => {
+      expect($body.find('#modal_crear:visible'), 'society modal').to.have.length(0)
+    })
+  }
+
+  assertEstablishmentModalClosed() {
+    return cy.get('body').should(($body) => {
+      expect($body.find('#modal-establecimiento-edit:visible'), 'establishment modal').to.have.length(0)
+    })
+  }
+
+  confirmSocietySuggestion() {
+    return cy.get('#modal_sugerir', { timeout: 60000 }).should('be.visible').find('#aceptarSug').click()
+  }
+
+  // Society rejected (invalid CUIT): the modal stays open, no confirmation
+  // appears and the society is not added. The missing error message is NOT
+  // asserted (OQ-048): it is a reported defect, not an expectation.
+  assertSocietyRejected(name) {
+    cy.wait(REJECTION_SETTLE_MS) // no visible signal exists; wait for the API answer before asserting absence
+    this.societyModal().should('be.visible')
+    cy.get('body').should(($body) => {
+      expect($body.find('#modal_sugerir:visible'), 'society confirmation dialog').to.have.length(0)
+    })
+    this.assertOptionAbsent(this.societySelect(), name)
+  }
+
+  assertOptionAbsent(select, name) {
+    return select.should(($select) => {
+      const found = [...$select.find('option')].some((option) => normalize(option.textContent).includes(normalize(name)))
+      expect(found, `option "${name}" in dropdown`).to.eq(false)
+    })
+  }
+
+  optionCount(select) {
+    return select.then(($select) => $select.find('option').length)
+  }
+
+  assertSelectedOptionContains(select, text) {
+    return select.should(($select) => {
+      expect(normalize($select.find('option:selected').text())).to.contain(normalize(text))
+    })
+  }
+
+  assertOptionTexts(select, expected) {
+    return select.should(($select) => {
+      expect([...$select.find('option')].map((option) => normalize(option.textContent))).to.deep.eq(expected.map(normalize))
+    })
+  }
+
+  waitForSocietyOptions() {
+    return this.societySelect({ timeout: OPTIONS_LOAD_TIMEOUT }).should(($select) => {
+      const loaded = [...$select.find('option')].filter((option) => option.value && option.value !== '0' && option.value !== 'crear')
+      expect(loaded.length, 'loaded societies').to.be.greaterThan(0)
+    })
+  }
+
+  waitForEstablishmentOptions() {
+    return this.establishmentSelect({ timeout: OPTIONS_LOAD_TIMEOUT }).should(($select) => {
+      const loaded = [...$select.find('option')].filter((option) => option.value && option.value !== '0' && option.value !== 'crear')
+      expect(loaded.length, 'loaded establishments').to.be.greaterThan(0)
+    })
+  }
+
+  // Fills the new establishment modal choosing the first province and party.
+  // Returns the chosen texts; read them after the queued commands have run.
+  fillEstablishmentForm(name) {
+    const chosen = {}
+    this.openNewEstablishment()
+    this.establishmentModal().find('#Nombre').clear().type(name)
+    this.establishmentModal().find('#Provincias').filter(':visible')
+      .should(($select) => expect(selectableOptions($select).length, 'provinces').to.be.greaterThan(0))
+      .then(($select) => {
+        const option = selectableOptions($select)[0]
+        chosen.province = option.text
+        cy.wrap($select).select(option.value)
+      })
+    this.establishmentModal().find('#Partido').filter(':visible')
+      .should('not.be.disabled')
+      .should(($select) => expect(selectableOptions($select).length, 'parties').to.be.greaterThan(0))
+      .then(($select) => {
+        const option = selectableOptions($select)[0]
+        chosen.party = option.text
+        cy.wrap($select).select(option.value)
+      })
+    return chosen
+  }
+
+  clickSaveEstablishment() {
+    return this.establishmentModal().find('.btn_guardar_est').click()
+  }
+
+  assertLocationAutofilled() {
+    cy.get('#_provincia').should(($el) => expect($el.text().trim(), 'province text').to.not.be.empty)
+    cy.get('#_partido').should(($el) => expect($el.text().trim(), 'party text').to.not.be.empty)
+    cy.get('#provincia_input').should('not.have.value', '')
+    cy.get('#partido_input').should('not.have.value', '')
+  }
+
+  assertLocationShows(location) {
+    cy.get('#_provincia').should(($el) => expect(normalize($el.text())).to.contain(normalize(location.province)))
+    cy.get('#_partido').should(($el) => expect(normalize($el.text())).to.contain(normalize(location.party)))
+  }
+
+  selectedSocietyText() {
+    return this.societySelect().then(($select) => $select.find('option:selected').text().trim())
+  }
+
+  // ---- Radios, labels and option lists (TC-INV-020 to TC-INV-031) ----------
+
+  radioLabel(id) {
+    return cy.get(`label[for="${id}"]`).filter(':visible')
+  }
+
+  radioInput(id) {
+    return cy.get(`input[id="${id}"]`)
+  }
+
+  clickRadio(id) {
+    return this.radioLabel(id).click()
+  }
+
+  assertRadiosVisible(ids, description) {
+    ids.forEach((id) => this.radioLabel(id).should('have.length.greaterThan', 0, `${description}: radio ${id}`))
+  }
+
+  assertRadiosHidden(ids, description) {
+    ids.forEach((id) => {
+      cy.get('body').should(($body) => {
+        expect($body.find(`label[for="${id}"]:visible`), `${description}: radio ${id}`).to.have.length(0)
+      })
+    })
+  }
+
+  assertRadioTexts(texts) {
+    Object.entries(texts).forEach(([id, text]) => {
+      this.radioLabel(id).should(($label) => expect(normalize($label.text()), `radio ${id}`).to.eq(normalize(text)))
+    })
+  }
+
+  assertRadioChecked(id) {
+    return this.radioInput(id).should('be.checked')
+  }
+
+  assertFieldsVisible(names, description) {
+    names.forEach((name) => this.visibleField(name).should('have.length.greaterThan', 0, `${description}: ${name}`))
+  }
+
+  assertFieldsHidden(names, description) {
+    names.forEach((name) => {
+      cy.get('body').should(($body) => {
+        expect($body.find(`[name="${name}"]:visible`), `${description}: ${name}`).to.have.length(0)
+      })
+    })
+  }
+
+  assertVisibleIds(ids, description) {
+    ids.forEach((id) => cy.get(`[id="${id}"]`).filter(':visible').should('have.length.greaterThan', 0, `${description}: #${id}`))
+  }
+
+  labelsMatching(text) {
+    return cy.get('.label_form_rapido, label').filter(':visible')
+      .filter((index, element) => normalize(element.textContent).includes(normalize(text)))
+  }
+
+  assertLabelsShown(labels, description) {
+    labels.forEach((label) => this.labelsMatching(label).should('have.length.greaterThan', 0, `${description}: ${label}`))
+  }
+
+  assertLabelsHidden(labels, description) {
+    labels.forEach((label) => {
+      cy.get('body').should(($body) => {
+        const visible = [...$body.find('.label_form_rapido:visible, label:visible')]
+          .filter((element) => normalize(element.textContent).includes(normalize(label)))
+        expect(visible, `${description}: ${label}`).to.have.length(0)
+      })
+    })
+  }
+
+  assertSelectOptions(name, expected) {
+    return this.visibleField(name).should(($select) => {
+      expect(selectableTexts($select), `options of ${name}`).to.deep.eq(expected)
+    })
+  }
+
+  assertCategoryOptions(expected) {
+    return this.categorySelect().should(($select) => {
+      expect(selectableTexts($select), 'category options').to.have.members(expected)
+      expect(selectableTexts($select)).to.have.length(expected.length)
+    })
+  }
+
+  // Compares the real choices of `name` with those of `reference`; `name` may
+  // carry an extra empty first option (`0=`).
+  assertSameBreedsAs(name, reference) {
+    return this.visibleField(reference).then(($reference) => {
+      const expected = selectableTexts($reference)
+      expect(expected.length, `options of ${reference}`).to.be.greaterThan(0)
+      return this.visibleField(name).should(($select) => {
+        expect(selectableTexts($select), `options of ${name}`).to.deep.eq(expected)
+        expect($select.find('option').first().text().trim(), `first option of ${name}`).to.eq('')
+      })
+    })
+  }
+
+  // Counts what the user can see/operate, to prove a click added nothing.
+  visibleControlCount() {
+    return cy.get(VISIBLE_CONTROLS).then(($elements) => $elements.length)
+  }
+
+  assertVisibleControlCount(expected) {
+    return cy.get(VISIBLE_CONTROLS).should(($elements) => {
+      expect($elements.length, 'visible controls').to.eq(expected)
+    })
+  }
+
+  breedButton() {
+    return cy.get('.btn_agregar_listado.agr_raza').filter(':visible')
+  }
+
+  clickAddBreed() {
+    return this.breedButton().first().click()
+  }
+
+  selectNthOption(name, position) {
+    return this.visibleField(name)
+      .should(($select) => expect(selectableOptions($select).length, `options of ${name}`).to.be.greaterThan(position))
+      .then(($select) => {
+        const option = selectableOptions($select)[position]
+        return cy.wrap($select).select(option.value).then(() => option.text)
+      })
+  }
+
+  // ---- Common fields (TC-INV-019, 021) -------------------------------------
+
+  typeQuantity(value) {
+    return this.visibleField('re_cantidad').clear().type(value)
+  }
+
+  typeAverageWeight(value) {
+    return this.visibleField('re_peso').clear().type(value)
+  }
+
+  // ---- Offer filling and submission (TC-INV-018, 032, 033) -----------------
+
+  setDate(target, daysAgo) {
+    const selector = target.id ? `#${target.id}` : `[name="${target.name}"]`
+    // The date widgets may be read-only pickers; set the value and notify the page.
+    return cy.get(selector).filter(':visible').invoke('val', formatDate(daysAgo)).trigger('input').trigger('change')
+  }
+
+  // Fills the whole form for a profile. The returned object is filled while
+  // the commands run: read it inside cy.then() after calling this method.
+  fillOffer(profile, { skipQuantity = false } = {}) {
+    const chosen = { breeds: [], category: profile.category }
+
+    this.selectCategory(profile.category)
+    if (!skipQuantity) this.typeQuantity(BASE_OFFER.quantity)
+    this.typeAverageWeight(BASE_OFFER.weight)
+    Object.entries(BASE_OFFER.segmentation).forEach(([name, value]) => this.visibleField(name).clear().type(value))
+
+    this.selectNthOption('re_raza', 0).then((text) => chosen.breeds.push(text))
+    for (let index = 1; index < profile.breeds; index += 1) {
+      this.clickAddBreed()
+      this.selectNthOption(`re_raza${index + 1}`, index).then((text) => chosen.breeds.push(text))
+    }
+    this.selectFirstOption('in_plazo_select')
+
+    Object.entries(profile.texts || {}).forEach(([name, value]) => this.visibleField(name).clear().type(value))
+    Object.entries(profile.selects || {}).forEach(([name, text]) => this.visibleField(name).select(text))
+    const radios = profile.radios || []
+    const dates = profile.dates || []
+    radios.forEach((id) => this.clickRadio(id))
+    dates.forEach(({ target, daysAgo }) => this.setDate(target, daysAgo))
+    return chosen
+  }
+
+  submitOffer() {
+    return cy.get('.btn_ofrecer.env').click()
+  }
+
+  assertQuantityRequired() {
+    return cy.get('.alert_input_faltante.required-re_cantidad').should('be.visible').and('contain.text', 'Debe completar el campo Cantidad')
+  }
+
+  // The form stays on screen and no confirmation view replaces it.
+  assertOfferFormStillShown() {
+    this.categorySelect().should('be.visible')
+    return cy.get('body').should(($body) => {
+      expect($body.find('.titulo_tropa_cargada:visible'), 'confirmation title').to.have.length(0)
+    })
+  }
+
+  // ---- Video (TC-INV-017) --------------------------------------------------
+
+  videoButton() {
+    return cy.get('.btn_subir_video')
+  }
+
+  videoResult() {
+    return cy.get('#seccion_archivos', { timeout: VIDEO_RESULT_TIMEOUT })
+  }
+
+  // Real flow: the button creates the partial lot first (POST ?parcial=true) and
+  // only then the file can be attached; attaching earlier uploads to lote=undefined.
+  // `waitForLot: false` is for a replacement, where the partial lot is reused.
+  attachVideo(file, { waitForLot = true } = {}) {
+    this.videoButton().click()
+    if (waitForLot) waitForPartialLot()
+    return cy.get('#Filedata').selectFile(file, { force: true })
+  }
+
+  assertVideoAccepted() {
+    this.videoResult().should('contain.text', 'Video cargado correctamente')
+    return this.videoResult().find('a').should('contain.text', 'Eliminar video cargado')
+  }
+
+  assertVideoRejected() {
+    this.videoResult().should('contain.text', 'compruebe que el formato sea el correcto')
+    return this.videoResult().find('a').should('not.exist')
+  }
+
+  assertNoVideoLoaded() {
+    return this.videoResult().should('contain.text', 'Aún no se han cargado archivos')
+  }
+
+  // "Eliminar video cargado" raises a native confirm; returns the captured texts.
+  deleteLoadedVideo() {
+    const dialogs = []
+    cy.on('window:confirm', (text) => {
+      dialogs.push(text)
+      return true
+    })
+    this.videoResult().find('a').contains('Eliminar video cargado').click()
+    return dialogs
   }
 
   submitEmptyOffer() {

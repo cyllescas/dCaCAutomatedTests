@@ -1,4 +1,6 @@
 require('dotenv/config');
+const fs = require('fs');
+const path = require('path');
 const { defineConfig } = require('cypress');
 const { createFailureReports } = require('./cypress/reporters/test-report-generator');
 
@@ -42,6 +44,12 @@ module.exports = defineConfig({
     setupNodeEvents(on, config) {
       on('after:spec', (spec, results) => {
         if (results && results.tests) createFailureReports(results, config.projectRoot);
+      });
+      // Lets specs skip cases whose local, non-versioned fixture (e.g. videos) is missing.
+      on('task', {
+        fileExists(filePath) {
+          return fs.existsSync(path.resolve(config.projectRoot, filePath));
+        },
       });
       return config;
     },

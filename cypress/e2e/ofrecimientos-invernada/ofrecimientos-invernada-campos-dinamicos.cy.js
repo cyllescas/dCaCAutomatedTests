@@ -6,13 +6,13 @@ import { CATEGORIES, FIELD_LABELS, SERVICE_TYPES, ZONES } from '../../support/da
 const credentials = credentialsFor('TEST_CLIENT_USERNAME', 'TEST_CLIENT_PASSWORD')
 
 const dynamicCategoryCases = [
-  { label: CATEGORIES.CALVES, labels: [] },
-  { label: CATEGORIES.CALVES_AND_HEIFER_CALVES, labels: FIELD_LABELS.GENDER_SPLIT },
-  { label: CATEGORIES.STEERS_AND_HEIFERS, labels: FIELD_LABELS.GENDER_SPLIT },
-  { label: CATEGORIES.COWS_WITH_CALF, labels: ['Edad', 'Peso promedio'] },
-  { label: CATEGORIES.PREGNANT_COWS, labels: ['Tipo de Servicio'] },
-  { label: CATEGORIES.HEIFERS_FOR_BREEDING, labels: ['Definidas'] },
-  { label: CATEGORIES.BULLS, labels: ['Apto para Vaquillonas', FIELD_LABELS.BULLS_ORIGIN] },
+  { id: 'TC-INV-003', label: CATEGORIES.CALVES, labels: [] },
+  { id: 'TC-INV-003', label: CATEGORIES.CALVES_AND_HEIFER_CALVES, labels: FIELD_LABELS.GENDER_SPLIT },
+  { id: 'TC-INV-003', label: CATEGORIES.STEERS_AND_HEIFERS, labels: FIELD_LABELS.GENDER_SPLIT },
+  { id: 'TC-INV-004', label: CATEGORIES.COWS_WITH_CALF, labels: ['Edad', 'Peso promedio'] },
+  { id: 'TC-INV-005', label: CATEGORIES.PREGNANT_COWS, labels: ['Tipo de Servicio'] },
+  { id: 'TC-INV-026', label: CATEGORIES.HEIFERS_FOR_BREEDING, labels: ['Definidas'] },
+  { id: 'TC-INV-003', label: CATEGORIES.BULLS, labels: ['Apto para Vaquillonas', FIELD_LABELS.BULLS_ORIGIN] },
 ]
 
 // Read-only checks: the form is opened once and reused across cases, so
@@ -28,21 +28,21 @@ describe('Campos dinámicos del ofrecimiento de invernada @invernada @ofrecimien
     InvernadaOfferPage.resetCategory()
   })
 
-  dynamicCategoryCases.forEach(({ label, labels }) => {
-    it(`muestra los campos dinámicos de ${label}`, () => {
+  dynamicCategoryCases.forEach(({ id, label, labels }) => {
+    it(`${id} muestra los campos dinámicos de ${label}`, () => {
       InvernadaOfferPage.selectCategory(label)
       if (labels.length) InvernadaOfferPage.assertVisibleLabels(labels, label)
     })
   })
 
-  it('muestra las dependencias de Servicio Natural para una categoría preñada', () => {
+  it('TC-INV-005 muestra las dependencias de Servicio Natural para una categoría preñada', () => {
     InvernadaOfferPage.selectCategory(CATEGORIES.PREGNANT_COWS)
     InvernadaOfferPage.serviceSection().should('be.visible')
     InvernadaOfferPage.selectServiceType(SERVICE_TYPES.NATURAL)
     InvernadaOfferPage.assertVisibleLabels(FIELD_LABELS.NATURAL_SERVICE, SERVICE_TYPES.NATURAL)
   })
 
-  it('muestra Garrapata y Mio-Mio para Zona Lucha y Sucia', () => {
+  it('TC-INV-006 muestra Garrapata y Mio-Mio para Zona Lucha y Sucia', () => {
     InvernadaOfferPage.selectCategory(CATEGORIES.CALVES)
     InvernadaOfferPage.selectZone(ZONES.LUCHA)
     InvernadaOfferPage.sanitaryZoneFields().should('have.length', 2)

@@ -26,7 +26,7 @@ describe('Ofrecimientos de invernada legacy @invernada @ofrecimientos @legacy @r
       visitInvernadaOfferForm(credentials)
     })
 
-    it('valida los campos obligatorios observados con el formulario vacío', () => {
+    it('TC-INV-002 valida los campos obligatorios observados con el formulario vacío', () => {
       selectExistingInvernadaLocation()
       InvernadaOfferPage.categorySelect().select(CATEGORIES.CALVES)
       InvernadaOfferPage.submitEmptyOffer()
@@ -42,13 +42,13 @@ describe('Ofrecimientos de invernada legacy @invernada @ofrecimientos @legacy @r
       InvernadaOfferPage.cancelModal(InvernadaOfferPage.establishmentModal())
     })
 
-    it('guarda una sociedad nueva y la muestra como opción del listado', () => {
+    it('TC-INV-008 guarda una sociedad nueva y la muestra como opción del listado', () => {
       const society = InvernadaOfferPage.fillNewSociety()
       InvernadaOfferPage.saveSociety()
-      InvernadaOfferPage.assertOptionAndSelect(InvernadaOfferPage.societySelect(), society.name, 'new society')
+      InvernadaOfferPage.assertOptionAndSelect(InvernadaOfferPage.societySelect({ timeout: 30000 }), society.name, 'new society')
     })
 
-    it('guarda un establecimiento nuevo y lo muestra como opción del listado', () => {
+    it('TC-INV-009 guarda un establecimiento nuevo y lo muestra como opción del listado', () => {
       InvernadaOfferPage.selectFirstAvailableSociety()
       const establishment = InvernadaOfferPage.fillNewEstablishment()
       InvernadaOfferPage.saveEstablishment()

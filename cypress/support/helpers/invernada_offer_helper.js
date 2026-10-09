@@ -24,3 +24,13 @@ export function selectExistingInvernadaLocation() {
   InvernadaOfferPage.selectFirstAvailableSociety()
   InvernadaOfferPage.selectFirstAvailableEstablishment()
 }
+
+// Local fixtures such as the videos are not versioned: skip the case when absent.
+export function skipWhenFileIsMissing(testContext, filePath) {
+  cy.task('fileExists', filePath).then((exists) => {
+    if (!exists) {
+      cy.log(`Skipped: local file not found (${filePath})`)
+      testContext.skip()
+    }
+  })
+}
