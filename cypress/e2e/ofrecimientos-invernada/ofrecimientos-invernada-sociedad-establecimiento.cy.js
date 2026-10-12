@@ -1,6 +1,7 @@
 import InvernadaOfferPage from '../../pages/InvernadaOfferPage'
 import { credentialsFor, skipWhenCredentialsAreMissing } from '../../support/helpers/login_helper'
 import { selectExistingInvernadaLocation, visitInvernadaOfferForm } from '../../support/helpers/invernada_offer_helper'
+import { LOCATION_LABELS } from '../../support/data/invernada_offer_data'
 
 const credentials = credentialsFor('TEST_CLIENT_USERNAME', 'TEST_CLIENT_PASSWORD')
 
@@ -30,7 +31,7 @@ describe('Sociedades y establecimientos de invernada legacy @invernada @ofrecimi
       InvernadaOfferPage.closeSocietyModal()
 
       InvernadaOfferPage.assertSocietyModalClosed()
-      InvernadaOfferPage.assertSelectedOptionContains(InvernadaOfferPage.societySelect(), 'Seleccionar una sociedad')
+      InvernadaOfferPage.assertSelectedOptionContains(InvernadaOfferPage.societySelect(), LOCATION_LABELS.SOCIETY_PLACEHOLDER)
       InvernadaOfferPage.assertOptionAbsent(InvernadaOfferPage.societySelect(), name)
       InvernadaOfferPage.societySelect().find('option').should('have.length', optionsBefore)
     })
@@ -46,7 +47,7 @@ describe('Sociedades y establecimientos de invernada legacy @invernada @ofrecimi
       InvernadaOfferPage.closeEstablishmentModal()
 
       InvernadaOfferPage.assertEstablishmentModalClosed()
-      InvernadaOfferPage.assertSelectedOptionContains(InvernadaOfferPage.establishmentSelect(), 'Seleccionar un establecimiento')
+      InvernadaOfferPage.assertSelectedOptionContains(InvernadaOfferPage.establishmentSelect(), LOCATION_LABELS.ESTABLISHMENT_PLACEHOLDER)
       InvernadaOfferPage.assertOptionAbsent(InvernadaOfferPage.establishmentSelect(), name)
       InvernadaOfferPage.establishmentSelect().find('option').should('have.length', optionsBefore)
     })
@@ -64,8 +65,8 @@ describe('Sociedades y establecimientos de invernada legacy @invernada @ofrecimi
     InvernadaOfferPage.assertSelectedOptionContains(InvernadaOfferPage.societySelect(), societyName)
     InvernadaOfferPage.establishmentSelect().should('not.be.disabled')
     InvernadaOfferPage.assertOptionTexts(InvernadaOfferPage.establishmentSelect(), [
-      'Seleccionar un establecimiento',
-      '+ Nuevo Establecimiento',
+      LOCATION_LABELS.ESTABLISHMENT_PLACEHOLDER,
+      LOCATION_LABELS.NEW_ESTABLISHMENT,
     ])
 
     const location = InvernadaOfferPage.fillEstablishmentForm(establishmentName)

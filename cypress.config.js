@@ -45,7 +45,7 @@ module.exports = defineConfig({
       on('after:spec', (spec, results) => {
         if (results && results.tests) createFailureReports(results, config.projectRoot);
       });
-      // Lets specs skip cases whose local, non-versioned fixture (e.g. videos) is missing.
+      // Lets specs assert that a local, non-versioned fixture (e.g. videos) exists.
       on('task', {
         fileExists(filePath) {
           return fs.existsSync(path.resolve(config.projectRoot, filePath));

@@ -1,9 +1,10 @@
 import InvernadaOfferPage from '../../pages/InvernadaOfferPage'
 import InvernadaConfirmationPage from '../../pages/InvernadaConfirmationPage'
+import InvernadaMyPublicationsPendingPage from '../../pages/InvernadaMyPublicationsPendingPage'
 import { credentialsFor, skipWhenCredentialsAreMissing } from '../../support/helpers/login_helper'
 import { selectExistingInvernadaLocation, visitInvernadaOfferForm } from '../../support/helpers/invernada_offer_helper'
 import { captureTropaId, observeLotRequests } from '../../support/helpers/invernada_trace_helper'
-import { BASE_OFFER, CALVES_PROFILE, SUBMIT_PROFILES } from '../../support/data/invernada_offer_data'
+import { BASE_OFFER, CALVES_PROFILE, SUBMIT_PROFILES, ZONES } from '../../support/data/invernada_offer_data'
 
 const credentials = credentialsFor('TEST_CLIENT_USERNAME', 'TEST_CLIENT_PASSWORD')
 
@@ -39,20 +40,8 @@ describe('Envío de ofrecimientos de invernada legacy @invernada @ofrecimientos 
     visitInvernadaOfferForm(credentials)
   })
 
-  it('TC-INV-018 caso 12.3: envía Terneros sin video y la tropa figura en Pendientes', () => {
-    cy.url().then((urlBefore) => {
-      submitProfile(CALVES_PROFILE)
-
-      captureTropaId().then((tropaId) => {
-        InvernadaConfirmationPage.assertOfferCreated()
-        InvernadaConfirmationPage.assertNoVideoPrompt()
-        cy.url().should('eq', urlBefore)
-        InvernadaConfirmationPage.goToOperations()
-        InvernadaConfirmationPage.pendingItem(tropaId).should('exist')
-      })
-    })
-  })
-
+  // Every profile is submitted without video, so each case also covers TC-INV-018 caso 12.3
+  // (the submission does not go through the "video not finished" prompt).
   profiles.forEach((profile) => {
     it(`TC-INV-032 caso ${profile.caseNumber}: ofrece ${profile.category} y verifica la tropa en Pendientes (TC-INV-033)`, () => {
       cy.url().then((urlBefore) => {
@@ -60,10 +49,11 @@ describe('Envío de ofrecimientos de invernada legacy @invernada @ofrecimientos 
 
         captureTropaId().then((tropaId) => {
           InvernadaConfirmationPage.assertOfferCreated()
+          InvernadaConfirmationPage.assertNoVideoPrompt()
           cy.url().should('eq', urlBefore)
           InvernadaConfirmationPage.goToOperations()
           cy.then(() => {
-            InvernadaConfirmationPage.assertPendingItem(tropaId, {
+            InvernadaMyPublicationsPendingPage.assertPendingItem(tropaId, {
               quantity: BASE_OFFER.quantity,
               category: profile.category,
               weight: BASE_OFFER.weight,
@@ -82,13 +72,13 @@ describe('Envío de ofrecimientos de invernada legacy @invernada @ofrecimientos 
     captureTropaId().then((tropaId) => {
       InvernadaConfirmationPage.assertOfferCreated()
       InvernadaConfirmationPage.goToOperations()
-      InvernadaConfirmationPage.openReport(tropaId)
-      InvernadaConfirmationPage.assertReportSegmentation(['260', '250', '240', '48'])
-      InvernadaConfirmationPage.openReportCharacteristics()
-      InvernadaConfirmationPage.assertReportCharacteristics({
+      InvernadaMyPublicationsPendingPage.openReport(tropaId)
+      InvernadaMyPublicationsPendingPage.assertReportSegmentation(BASE_OFFER)
+      InvernadaMyPublicationsPendingPage.openReportCharacteristics()
+      InvernadaMyPublicationsPendingPage.assertReportCharacteristics({
         quantity: BASE_OFFER.quantity,
         ageMonths: CALVES_PROFILE.texts.in_edad,
-        zone: 'Limpia',
+        zone: ZONES.LIMPIA,
         weaned: 's[ií]',
         castrated: 'no',
       })

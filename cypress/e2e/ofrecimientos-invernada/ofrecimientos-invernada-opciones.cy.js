@@ -1,7 +1,7 @@
 import InvernadaOfferPage from '../../pages/InvernadaOfferPage'
 import { credentialsFor, skipWhenCredentialsAreMissing } from '../../support/helpers/login_helper'
 import { selectExistingInvernadaLocation, visitInvernadaOfferForm } from '../../support/helpers/invernada_offer_helper'
-import { OPTION_CASES } from '../../support/data/invernada_offer_data'
+import { CATEGORIES, FIELD_LABELS, OPTION_CASES, SERVICE_TYPES } from '../../support/data/invernada_offer_data'
 
 const credentials = credentialsFor('TEST_CLIENT_USERNAME', 'TEST_CLIENT_PASSWORD')
 
@@ -28,15 +28,15 @@ describe('Opciones de selects y radios de invernada legacy @invernada @ofrecimie
   })
 
   it('TC-INV-025 caso 34: la raza de inseminación y de servicio ofrece las mismas razas que Raza', () => {
-    InvernadaOfferPage.selectCategory('Vacas preñadas')
+    InvernadaOfferPage.selectCategory(CATEGORIES.PREGNANT_COWS)
     InvernadaOfferPage.assertSameBreedsAs('in_raza_servicio', 're_raza')
     InvernadaOfferPage.clickRadio('natural')
-    InvernadaOfferPage.assertLabelsShown(['Raza de servicio'], 'Servicio Natural')
+    InvernadaOfferPage.assertLabelsShown(FIELD_LABELS.SERVICE_BREED, SERVICE_TYPES.NATURAL)
     InvernadaOfferPage.assertSameBreedsAs('in_raza_servicio', 're_raza')
   })
 
   it('TC-INV-025 caso 35: la raza del repaso ofrece las mismas razas que Raza', () => {
-    InvernadaOfferPage.selectCategory('Vacas preñadas')
+    InvernadaOfferPage.selectCategory(CATEGORIES.PREGNANT_COWS)
     InvernadaOfferPage.clickRadio('mas_repaso')
     InvernadaOfferPage.assertSameBreedsAs('in_toro_raza_repaso', 're_raza')
   })

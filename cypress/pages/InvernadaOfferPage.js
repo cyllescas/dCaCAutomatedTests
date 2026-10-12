@@ -551,6 +551,12 @@ class InvernadaOfferPage {
   // only then the file can be attached; attaching earlier uploads to lote=undefined.
   // `waitForLot: false` is for a replacement, where the partial lot is reused.
   attachVideo(file, { waitForLot = true } = {}) {
+    // In-memory files ({ contents, fileName }) have no path to check.
+    if (typeof file === 'string') {
+      cy.task('fileExists', file).then((exists) => {
+        expect(exists, `video fixture not found: ${file}`).to.be.true
+      })
+    }
     this.videoButton().click()
     if (waitForLot) waitForPartialLot()
     return cy.get('#Filedata').selectFile(file, { force: true })

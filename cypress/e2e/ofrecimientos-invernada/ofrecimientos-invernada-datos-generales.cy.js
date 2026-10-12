@@ -1,8 +1,8 @@
 import InvernadaOfferPage from '../../pages/InvernadaOfferPage'
 import { credentialsFor, skipWhenCredentialsAreMissing } from '../../support/helpers/login_helper'
-import { selectExistingInvernadaLocation, skipWhenFileIsMissing, visitInvernadaOfferForm } from '../../support/helpers/invernada_offer_helper'
+import { selectExistingInvernadaLocation, visitInvernadaOfferForm } from '../../support/helpers/invernada_offer_helper'
 import { observeLotRequests } from '../../support/helpers/invernada_trace_helper'
-import { ALL_CATEGORIES, CALVES_PROFILE, VIDEO_FILES, VIDEO_MESSAGES } from '../../support/data/invernada_offer_data'
+import { CALVES_PROFILE, CATEGORIES, VIDEO_FILES, VIDEO_MESSAGES } from '../../support/data/invernada_offer_data'
 
 const credentials = credentialsFor('TEST_CLIENT_USERNAME', 'TEST_CLIENT_PASSWORD')
 
@@ -20,7 +20,7 @@ describe('Datos generales de invernada legacy (sólo lectura) @invernada @ofreci
   })
 
   it('TC-INV-020 caso 18: la lista de categorías contiene las 17 categorías', () => {
-    InvernadaOfferPage.assertCategoryOptions(ALL_CATEGORIES)
+    InvernadaOfferPage.assertCategoryOptions(Object.values(CATEGORIES))
   })
 
   it('TC-INV-021 caso 19: el peso promedio no tiene restricción', () => {
@@ -70,24 +70,18 @@ describe('Carga de video de invernada legacy @invernada @ofrecimientos @legacy @
   })
 
   it('TC-INV-017 caso 12: acepta un video válido de 29 s', function () {
-    skipWhenFileIsMissing(this, VIDEO_FILES.valid())
-
     InvernadaOfferPage.attachVideo(VIDEO_FILES.valid())
 
     InvernadaOfferPage.assertVideoAccepted()
   })
 
   it('TC-INV-017 caso 12.5: acepta un video de 9 s', function () {
-    skipWhenFileIsMissing(this, VIDEO_FILES.short())
-
     InvernadaOfferPage.attachVideo(VIDEO_FILES.short())
 
     InvernadaOfferPage.assertVideoAccepted()
   })
 
   it('TC-INV-017 caso 12.1: rechaza un video de 4 s con un mensaje visible', function () {
-    skipWhenFileIsMissing(this, VIDEO_FILES.rejected())
-
     InvernadaOfferPage.attachVideo(VIDEO_FILES.rejected())
 
     InvernadaOfferPage.assertVideoRejected()
@@ -104,8 +98,6 @@ describe('Carga de video de invernada legacy @invernada @ofrecimientos @legacy @
   })
 
   it('TC-INV-017 caso 12.4: permite reemplazar un archivo rechazado por un video válido', function () {
-    skipWhenFileIsMissing(this, VIDEO_FILES.valid())
-
     InvernadaOfferPage.attachVideo({
       contents: Cypress.Buffer.from('QA archivo de texto que no es un video'),
       fileName: 'QA-no-es-video.txt',
@@ -119,8 +111,6 @@ describe('Carga de video de invernada legacy @invernada @ofrecimientos @legacy @
   })
 
   it('TC-INV-017 caso 12.4: permite eliminar el video cargado tras confirmar', function () {
-    skipWhenFileIsMissing(this, VIDEO_FILES.valid())
-
     InvernadaOfferPage.attachVideo(VIDEO_FILES.valid())
     InvernadaOfferPage.assertVideoAccepted()
     const dialogs = InvernadaOfferPage.deleteLoadedVideo()

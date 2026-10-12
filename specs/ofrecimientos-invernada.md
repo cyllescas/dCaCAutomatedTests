@@ -548,7 +548,7 @@ siguiente: `missing_authorized_data`).
 
 ### Page Objects
 - Extend `cypress/pages/InvernadaOfferPage.js`.
-- Add `cypress/pages/InvernadaConfirmationPage.js` for the confirmation view and the Pendientes list.
+- Add `cypress/pages/InvernadaConfirmationPage.js` for the confirmation view and `cypress/pages/InvernadaMyPublicationsPendingPage.js` for the Pendientes list (`/__dcac/misPublicaciones`).
 - Reuse `OfferPage.offerInvernadaButton`, `MainClientPage.mainCotizarButton`, and `loginWithSession` (`visitInvernadaOfferForm`, `openInvernadaOfferForm`, `selectExistingInvernadaLocation`).
 
 ### Observed selector inventory (stage.dcac.ar)
@@ -609,7 +609,6 @@ siguiente: `missing_authorized_data`).
 
 ### Related specs
 - `cypress/e2e/ofrecimientos-invernada/ofrecimientos-invernada.cy.js`
-- `cypress/e2e/ofrecimientos-invernada/ofrecimientos-invernada-campos-dinamicos.cy.js`
 
 ### Required data
 - Local, not versioned videos: `cypress/fixtures/video_ofrecimiento.mp4` (29 s, M4V, valid), `cypress/fixtures/video_ofrecimiento_corto.mp4` (9 s, also valid) and `cypress/fixtures/video_ofrecimiento_4seg.mp4` (4 s, rejected). Overridable with `INVERNADA_VIDEO_PATH` (valid) and `INVERNADA_VIDEO_SHORT_PATH` (rejected, defaults to the 4 s file). Skip when the file does not exist.

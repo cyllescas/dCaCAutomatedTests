@@ -1,36 +1,68 @@
+// The 17 categories of the offer form, in the order the form lists them.
 export const CATEGORIES = {
   CALVES: 'Terneros',
+  HEIFER_CALVES: 'Terneras',
   CALVES_AND_HEIFER_CALVES: 'Terneros y Terneras',
+  YOUNG_STEERS: 'Novillitos',
+  HEIFERS: 'Vaquillonas',
   STEERS_AND_HEIFERS: 'Novillitos y Vaquillonas',
+  STEERS: 'Novillos',
+  INVERNADA_COWS: 'Vacas de invernada',
   COWS_WITH_CALF: 'Vacas con cría',
+  MEJ: 'MEJ',
+  CUT_COWS_WITH_CALF: 'Vacas CUT con cría',
+  CUT_PREGNANT_COWS: 'Vacas CUT preñadas',
   PREGNANT_COWS: 'Vacas preñadas',
+  HEIFERS_WITH_CALF: 'Vaquillonas con cría',
+  PREGNANT_HEIFERS: 'Vaquillonas preñadas',
   HEIFERS_FOR_BREEDING: 'Vaquillonas para madre',
   BULLS: 'Toros',
 }
 
 export const SERVICE_TYPES = {
+  INSEMINATION: 'Inseminación',
   NATURAL: 'Servicio Natural',
+  INSEMINATION_PLUS_REPASO: 'Inseminación + repaso',
 }
 
 export const ZONES = {
+  LIMPIA: 'Limpia',
   LUCHA: 'Lucha',
   SUCIA: 'Sucia',
 }
 
 export const FIELD_LABELS = {
   BULLS_ORIGIN: 'Origen de los toros',
+  AGE_AND_AVERAGE_WEIGHT: ['Edad', 'Peso promedio'],
+  SERVICE_TYPE: ['Tipo de Servicio'],
+  DEFINED: ['Definidas'],
+  BULLS_FOR_HEIFERS: 'Apto para Vaquillonas',
+  WEANING_DATE: ['Fecha de destete'],
+  CASTRATION_DATE: ['Fecha de capados'],
+  TICK_AND_MIOMIO: ['Garrapata', 'Mio-Mio'],
+  INSEMINATION_DATE: ['Fecha de Inseminación'],
+  INSEMINATION_RANGE: ['Inicio de inseminación', 'Fin de inseminación'],
+  INSEMINATION_BREED_AND_BULL: ['Raza de inseminación', 'Toro de inseminación'],
+  SERVICE_BREED: ['Raza de servicio'],
+  INSEMINATION_PLUS_REPASO: ['Raza de inseminación', 'Toro de inseminación', 'Inicio del repaso', 'Fin del repaso', 'Raza de servicio', 'Origen de los toros'],
   GENDER_SPLIT: ['Machos', 'Hembras'],
   NATURAL_SERVICE: ['Inicio del servicio', 'Fin del servicio', 'Raza de servicio', 'Origen de los toros'],
 }
 
 // ---------------------------------------------------------------------------
-// TC-INV-017: video fixtures. The files are local and not versioned; specs skip
-// the case when the file does not exist (see the `fileExists` task).
+// TC-INV-017: video fixtures. The files are local and not versioned; the cases
+// fail when a file is missing (no skip), so CI must provide them.
 // ---------------------------------------------------------------------------
 export const VIDEO_FILES = {
   valid: () => Cypress.env('INVERNADA_VIDEO_PATH') || 'cypress/fixtures/video_ofrecimiento.mp4',
   short: () => 'cypress/fixtures/video_ofrecimiento_corto.mp4',
   rejected: () => Cypress.env('INVERNADA_VIDEO_SHORT_PATH') || 'cypress/fixtures/video_ofrecimiento_4seg.mp4',
+}
+
+export const LOCATION_LABELS = {
+  SOCIETY_PLACEHOLDER: 'Seleccionar una sociedad',
+  ESTABLISHMENT_PLACEHOLDER: 'Seleccionar un establecimiento',
+  NEW_ESTABLISHMENT: '+ Nuevo Establecimiento',
 }
 
 export const VIDEO_MESSAGES = {
@@ -43,29 +75,23 @@ export const VIDEO_MESSAGES = {
 // ---------------------------------------------------------------------------
 // TC-INV-020 / TC-INV-024 / TC-INV-025: observed option lists.
 // ---------------------------------------------------------------------------
-export const ALL_CATEGORIES = [
-  'Terneros', 'Terneras', 'Terneros y Terneras', 'Novillitos', 'Vaquillonas', 'Novillitos y Vaquillonas',
-  'Novillos', 'Vacas de invernada', 'Vacas con cría', 'MEJ', 'Vacas CUT con cría', 'Vacas CUT preñadas',
-  'Vacas preñadas', 'Vaquillonas con cría', 'Vaquillonas preñadas', 'Vaquillonas para madre', 'Toros',
-]
-
 // Radios are hidden inputs; the visible control is `label[for=<id>]`.
 export const OPTION_CASES = [
-  { caseNumber: 24, title: 'Marca Líquida', category: 'Terneros', radios: { si_marca: 'Sí', no_marca: 'No' } },
-  { caseNumber: 25, title: 'Calidad', category: 'Terneros', select: 'in_calidad', options: ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10'] },
-  { caseNumber: 26, title: 'Estado Corporal', category: 'Terneros', select: 'in_estado_corporal', options: ['2', '2.5', '3', '3.5', '4', '4.5', '5'] },
+  { caseNumber: 24, title: 'Marca Líquida', category: CATEGORIES.CALVES, radios: { si_marca: 'Sí', no_marca: 'No' } },
+  { caseNumber: 25, title: 'Calidad', category: CATEGORIES.CALVES, select: 'in_calidad', options: ['6', '6.5', '7', '7.5', '8', '8.5', '9', '9.5', '10'] },
+  { caseNumber: 26, title: 'Estado Corporal', category: CATEGORIES.CALVES, select: 'in_estado_corporal', options: ['2', '2.5', '3', '3.5', '4', '4.5', '5'] },
   {
     caseNumber: 27,
     title: 'Tratamiento Nutricional',
-    category: 'Terneros',
+    category: CATEGORIES.CALVES,
     select: 'in_tratamiento_nutricional',
     options: ['Campo Natural', 'Racionados', 'A Corral', 'Praderas y/o Verdeos', 'Otro'],
   },
-  { caseNumber: 28, title: 'Zona', category: 'Terneros', radios: { limpia: 'Limpia', lucha: 'Lucha', sucia: 'Sucia' } },
+  { caseNumber: 28, title: 'Zona', category: CATEGORIES.CALVES, radios: { limpia: 'Limpia', lucha: 'Lucha', sucia: 'Sucia' } },
   {
     caseNumber: 29,
     title: 'Dentición',
-    category: 'Vacas de invernada',
+    category: CATEGORIES.INVERNADA_COWS,
     select: 'in_denticion',
     options: [
       'Diente de leche', '2 Dientes', '4 Dientes', '6 Dientes', 'Boca Llena', '1/2 Diente Arriba', '1/2 Diente',
@@ -75,21 +101,21 @@ export const OPTION_CASES = [
   {
     caseNumber: 30,
     title: 'Tipo de Rodeo',
-    category: 'Vacas de invernada',
+    category: CATEGORIES.INVERNADA_COWS,
     select: 'in_tipo_rodeo',
     options: ['Rodeo General', 'Puro controlado', 'Puro Pedigree', 'Angus MAS'],
   },
-  { caseNumber: 31, title: 'Uniformidad de la cría', category: 'Vacas con cría', radios: { parejo_cria: 'Parejo', desparejo_cria: 'Desparejo' } },
+  { caseNumber: 31, title: 'Uniformidad de la cría', category: CATEGORIES.COWS_WITH_CALF, radios: { parejo_cria: 'Parejo', desparejo_cria: 'Desparejo' } },
   {
     caseNumber: 32,
     title: 'Tipo de servicio',
-    category: 'Vacas preñadas',
+    category: CATEGORIES.PREGNANT_COWS,
     radios: { inseminacion: 'Inseminación', natural: 'Servicio Natural', mas_repaso: 'Inseminación + repaso' },
   },
   {
     caseNumber: 33,
     title: 'Inseminación',
-    category: 'Vacas preñadas',
+    category: CATEGORIES.PREGNANT_COWS,
     serviceRadio: 'inseminacion',
     radios: { fijo: 'A tiempo fijo', deteccion: 'Con detección' },
   },
@@ -98,7 +124,7 @@ export const OPTION_CASES = [
 // ---------------------------------------------------------------------------
 // TC-INV-026: fields observed per category. `common` applies to every category.
 // `fields` are [name] attributes; `radios` are ids of hidden radio inputs
-// (assert `label[for=<id>]`). Units (Meses/Años) have no observed selector and
+// (assert `label[for=<id>]`). `labels` are visible texts (TC-INV-003/004/005). Units (Meses/Años) have no observed selector and
 // are not asserted.
 // ---------------------------------------------------------------------------
 export const COMMON_FIELDS = {
@@ -125,48 +151,56 @@ const withExtra = (base, extra = {}) => ({
 })
 
 export const CATEGORY_FIELD_CASES = [
-  { caseNumber: 36, category: 'Terneros', ...withExtra(YOUNG_STOCK, { radios: ['destetados', 'capados'] }) },
-  { caseNumber: 37, category: 'Terneras', ...withExtra(YOUNG_STOCK, { radios: ['destetados'] }), absentRadios: ['capados'] },
+  { caseNumber: 36, category: CATEGORIES.CALVES, ...withExtra(YOUNG_STOCK, { radios: ['destetados', 'capados'] }) },
+  { caseNumber: 37, category: CATEGORIES.HEIFER_CALVES, ...withExtra(YOUNG_STOCK, { radios: ['destetados'] }), absentRadios: ['capados'] },
   {
     caseNumber: 38,
-    category: 'Terneros y Terneras',
+    category: CATEGORIES.CALVES_AND_HEIFER_CALVES,
     ...withExtra(YOUNG_STOCK, { fields: ['in_cantidad_machos', 'in_cantidad_hembras'], radios: ['destetados', 'capados'] }),
+    labels: FIELD_LABELS.GENDER_SPLIT,
   },
-  { caseNumber: 39, category: 'Novillitos', ...YOUNG_STOCK },
-  { caseNumber: 40, category: 'Vaquillonas', ...YOUNG_STOCK },
-  { caseNumber: 41, category: 'Novillitos y Vaquillonas', ...withExtra(YOUNG_STOCK, { fields: ['in_cantidad_machos', 'in_cantidad_hembras'] }) },
-  { caseNumber: 42, category: 'Novillos', ...YOUNG_STOCK },
+  { caseNumber: 39, category: CATEGORIES.YOUNG_STEERS, ...YOUNG_STOCK },
+  { caseNumber: 40, category: CATEGORIES.HEIFERS, ...YOUNG_STOCK },
+  {
+    caseNumber: 41,
+    category: CATEGORIES.STEERS_AND_HEIFERS,
+    ...withExtra(YOUNG_STOCK, { fields: ['in_cantidad_machos', 'in_cantidad_hembras'] }),
+    labels: FIELD_LABELS.GENDER_SPLIT,
+  },
+  { caseNumber: 42, category: CATEGORIES.STEERS, ...YOUNG_STOCK },
   {
     caseNumber: 43,
-    category: 'Vacas de invernada',
+    category: CATEGORIES.INVERNADA_COWS,
     fields: ['in_edad', 'in_denticion', 'in_calidad', 'in_tipo_rodeo', 'in_tratamiento_nutricional', ...WEIGHING],
     radios: ['si_marca', 'limpia', 'muy_buena', 'sociedad'],
   },
-  { caseNumber: 44, category: 'Vacas con cría', ...WITH_CALF },
-  { caseNumber: 45, category: 'Vacas CUT con cría', ...WITH_CALF },
+  { caseNumber: 44, category: CATEGORIES.COWS_WITH_CALF, ...WITH_CALF, labels: FIELD_LABELS.AGE_AND_AVERAGE_WEIGHT },
+  { caseNumber: 45, category: CATEGORIES.CUT_COWS_WITH_CALF, ...WITH_CALF },
   // OQ-043: MEJ only shows the common fields (user observation reproduced).
   {
     caseNumber: 46,
-    category: 'MEJ',
+    category: CATEGORIES.MEJ,
     fields: [],
     radios: [],
     absentFields: ['in_edad', 'in_calidad', 'in_tratamiento_nutricional', 'in_tipo_rodeo', 'in_denticion'],
   },
-  { caseNumber: 47, category: 'Vacas preñadas', ...withExtra(PREGNANT, { fields: ['in_denticion'] }) },
-  { caseNumber: 48, category: 'Vacas CUT preñadas', ...withExtra(PREGNANT, { fields: ['in_denticion'] }) },
-  { caseNumber: 49, category: 'Vaquillonas con cría', ...WITH_CALF },
-  { caseNumber: 50, category: 'Vaquillonas preñadas', ...PREGNANT, absentFields: ['in_denticion'] },
+  { caseNumber: 47, category: CATEGORIES.PREGNANT_COWS, ...withExtra(PREGNANT, { fields: ['in_denticion'] }), labels: FIELD_LABELS.SERVICE_TYPE },
+  { caseNumber: 48, category: CATEGORIES.CUT_PREGNANT_COWS, ...withExtra(PREGNANT, { fields: ['in_denticion'] }) },
+  { caseNumber: 49, category: CATEGORIES.HEIFERS_WITH_CALF, ...WITH_CALF },
+  { caseNumber: 50, category: CATEGORIES.PREGNANT_HEIFERS, ...PREGNANT, absentFields: ['in_denticion'] },
   {
     caseNumber: 51,
-    category: 'Vaquillonas para madre',
+    category: CATEGORIES.HEIFERS_FOR_BREEDING,
     fields: ['in_edad', 'in_calidad', 'in_tipo_rodeo', 'in_tratamiento_nutricional'],
     radios: ['si_marca', 'si_definidos', 'limpia', 'muy_buena'],
+    labels: FIELD_LABELS.DEFINED,
   },
   {
     caseNumber: 52,
-    category: 'Toros',
+    category: CATEGORIES.BULLS,
     fields: ['in_edad', 'in_tratamiento_nutricional', 'in_denticion', 'in_tipo_rodeo', 'in_calidad', 'in_toro_origen_text'],
     radios: ['si_analisis', 'limpia', 'si_apto_vaquillonas'],
+    labels: [FIELD_LABELS.BULLS_FOR_HEIFERS, FIELD_LABELS.BULLS_ORIGIN],
   },
 ]
 
@@ -193,34 +227,34 @@ const DATE_REPASO_START = { name: 'in_inicio_repaso' }
 const DATE_REPASO_END = { name: 'in_fin_repaso' }
 
 export const SUBMIT_PROFILES = [
-  { caseNumber: 69, category: 'Terneros', breeds: 1, texts: { in_edad: '7' }, radios: ['destetados', 'capados', 'limpia'] },
+  { caseNumber: 69, category: CATEGORIES.CALVES, breeds: 1, texts: { in_edad: '7' }, radios: ['destetados', 'capados', 'limpia'] },
   {
     caseNumber: 70,
-    category: 'Terneras',
+    category: CATEGORIES.HEIFER_CALVES,
     breeds: 2,
     texts: { in_edad: '7' },
     radios: ['no_destetados', 'lucha', 'no_garrapata', 'no_miomio'],
   },
   {
     caseNumber: 71,
-    category: 'Terneros y Terneras',
+    category: CATEGORIES.CALVES_AND_HEIFER_CALVES,
     breeds: 1,
     texts: { in_edad: '7', in_cantidad_machos: '25', in_cantidad_hembras: '25' },
     radios: ['destetados', 'no_capados', 'sucia', 'si_garrapata', 'no_miomio'],
   },
-  { caseNumber: 72, category: 'Novillitos', breeds: 1, texts: { in_edad: '14' }, selects: { in_tratamiento_nutricional: 'Praderas y/o Verdeos' }, radios: ['limpia'] },
-  { caseNumber: 73, category: 'Vaquillonas', breeds: 3, texts: { in_edad: '14' }, radios: ['limpia'] },
+  { caseNumber: 72, category: CATEGORIES.YOUNG_STEERS, breeds: 1, texts: { in_edad: '14' }, selects: { in_tratamiento_nutricional: 'Praderas y/o Verdeos' }, radios: ['limpia'] },
+  { caseNumber: 73, category: CATEGORIES.HEIFERS, breeds: 3, texts: { in_edad: '14' }, radios: ['limpia'] },
   {
     caseNumber: 74,
-    category: 'Novillitos y Vaquillonas',
+    category: CATEGORIES.STEERS_AND_HEIFERS,
     breeds: 1,
     texts: { in_edad: '14', in_cantidad_machos: '30', in_cantidad_hembras: '20' },
     radios: ['limpia'],
   },
-  { caseNumber: 75, category: 'Novillos', breeds: 1, texts: { in_edad: '20' }, selects: { in_tratamiento_nutricional: 'A Corral' }, radios: ['limpia'] },
+  { caseNumber: 75, category: CATEGORIES.STEERS, breeds: 1, texts: { in_edad: '20' }, selects: { in_tratamiento_nutricional: 'A Corral' }, radios: ['limpia'] },
   {
     caseNumber: 76,
-    category: 'Vacas de invernada',
+    category: CATEGORIES.INVERNADA_COWS,
     breeds: 1,
     texts: { in_edad: '6' },
     selects: { in_denticion: 'Boca Llena', in_tipo_rodeo: 'Rodeo General' },
@@ -228,22 +262,22 @@ export const SUBMIT_PROFILES = [
   },
   {
     caseNumber: 77,
-    category: 'Vacas con cría',
+    category: CATEGORIES.COWS_WITH_CALF,
     breeds: 1,
     texts: { in_edad: '5', in_edad_cria: '4', in_peso_promedio_cria: '120' },
     radios: ['parejo_cria'],
   },
   {
     caseNumber: 78,
-    category: 'Vacas CUT con cría',
+    category: CATEGORIES.CUT_COWS_WITH_CALF,
     breeds: 1,
     texts: { in_edad: '8', in_edad_cria: '4', in_peso_promedio_cria: '120' },
     radios: ['desparejo_cria'],
   },
-  { caseNumber: 79, category: 'MEJ', breeds: 1 },
+  { caseNumber: 79, category: CATEGORIES.MEJ, breeds: 1 },
   {
     caseNumber: 80,
-    category: 'Vacas preñadas',
+    category: CATEGORIES.PREGNANT_COWS,
     breeds: 1,
     texts: { in_edad: '5' },
     radios: ['inseminacion', 'fijo'],
@@ -251,7 +285,7 @@ export const SUBMIT_PROFILES = [
   },
   {
     caseNumber: 81,
-    category: 'Vacas CUT preñadas',
+    category: CATEGORIES.CUT_PREGNANT_COWS,
     breeds: 1,
     texts: { in_edad: '8' },
     radios: ['natural'],
@@ -259,14 +293,14 @@ export const SUBMIT_PROFILES = [
   },
   {
     caseNumber: 82,
-    category: 'Vaquillonas con cría',
+    category: CATEGORIES.HEIFERS_WITH_CALF,
     breeds: 1,
     texts: { in_edad: '26', in_edad_cria: '3', in_peso_promedio_cria: '100' },
     radios: ['parejo_cria'],
   },
   {
     caseNumber: 83,
-    category: 'Vaquillonas preñadas',
+    category: CATEGORIES.PREGNANT_HEIFERS,
     breeds: 1,
     texts: { in_edad: '20' },
     radios: ['mas_repaso', 'deteccion'],
@@ -277,14 +311,14 @@ export const SUBMIT_PROFILES = [
       { target: DATE_REPASO_END, daysAgo: 45 },
     ],
   },
-  { caseNumber: 84, category: 'Vaquillonas para madre', breeds: 1, texts: { in_edad: '15' }, selects: { in_tipo_rodeo: 'Puro controlado' } },
-  { caseNumber: 85, category: 'Toros', breeds: 1, texts: { in_edad: '3' }, selects: { in_tipo_rodeo: 'Puro Pedigree', in_denticion: '4 Dientes' } },
+  { caseNumber: 84, category: CATEGORIES.HEIFERS_FOR_BREEDING, breeds: 1, texts: { in_edad: '15' }, selects: { in_tipo_rodeo: 'Puro controlado' } },
+  { caseNumber: 85, category: CATEGORIES.BULLS, breeds: 1, texts: { in_edad: '3' }, selects: { in_tipo_rodeo: 'Puro Pedigree', in_denticion: '4 Dientes' } },
 ]
 
 // TC-INV-018 and TC-INV-033 use the Terneros profile of the TC-INV-033 table
 // (Destetados Sí, Capados No, Zona Limpia, Edad 7).
 export const CALVES_PROFILE = {
-  category: 'Terneros',
+  category: CATEGORIES.CALVES,
   breeds: 1,
   texts: { in_edad: '7' },
   radios: ['destetados', 'no_capados', 'limpia'],
