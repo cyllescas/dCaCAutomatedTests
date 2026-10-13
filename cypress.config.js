@@ -47,6 +47,11 @@ module.exports = defineConfig({
       });
       // Lets specs assert that a local, non-versioned fixture (e.g. videos) exists.
       on('task', {
+        // Step trace printed to the console of `cypress run`, to locate where a run stalls.
+        trace(message) {
+          console.log(`[trace ${new Date().toISOString()}] ${message}`)
+          return null
+        },
         fileExists(filePath) {
           return fs.existsSync(path.resolve(config.projectRoot, filePath));
         },

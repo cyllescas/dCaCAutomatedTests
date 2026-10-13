@@ -14,7 +14,7 @@ export function login(username, password) {
 // Reuses the authenticated browser state during the current Cypress run.
 // Keep this separate from `login` because the login suite also exercises
 // invalid credentials and must submit the form every time.
-export function loginWithSession(username, password, expectedRole = 'client', { landingPath = '/__dcac/' } = {}) {
+export function loginWithSession(username, password, expectedRole = 'client', { landingPath = '/__dcac/', validatePath = '/__dcac/' } = {}) {
     cy.session(
         ['dcac-authenticated-user', expectedRole, username],
         () => {
@@ -27,8 +27,8 @@ export function loginWithSession(username, password, expectedRole = 'client', { 
         {
             cacheAcrossSpecs: true,
             validate() {
-                cy.visit('/__dcac/')
-                cy.url({ timeout: 60000 }).should('include', '/__dcac/')
+                cy.visit(validatePath)
+                cy.url({ timeout: 60000 }).should('include', validatePath)
                 assertLoginFormIsNotVisible()
                 assertAuthenticatedView(expectedRole)
             },

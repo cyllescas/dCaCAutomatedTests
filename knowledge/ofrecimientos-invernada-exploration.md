@@ -225,3 +225,12 @@ observados: #35415, #35416, #35417 y #35418; los dos últimos presumiblemente
 ## Envíos reales de esta re-exploración
 Dos tropas: #35568 (flujo completo) y #35578 (envío con subida en curso), más lotes parciales
 huérfanos #35561 a #35567 entre otros. Total de envíos reales de la exploración: 8.
+
+## Exploración del legajo Admin con 4 tropas (2026-10-13)
+Informe completo y tablas en `specs/ofrecimientos-invernada-legajo-admin.md`. Observaciones, no reglas de negocio:
+- `OBS-INV-028` Cuatro envíos reales (stage): Terneros mínimo #35685, Terneras completo con video #35686, Vacas con cría mínimo #35687 y Vacas con cría completo con video #35688. El formulario permite enviar sólo con cantidad, categoría, raza y plazo.
+- `OBS-INV-029` El Admin llega al legajo por dos caminos con el mismo contenido: Home > INVERNADA > "Ofrecimientos (N)" > "Ver Legajo" (`#fila_<id>`, URL `#legajo`), o buscador `#busca_i` + ENTER + opción Invernada (vista sólo del legajo, `#agregarinvernada`).
+- `OBS-INV-030` El legajo sí muestra lo que el informe de Pendientes no: aclaración del cliente, Plazo de Venta, Descarte, Tipo de Rodeo, datos de la cría y el video (`b.video_cargado`, ítems en `#section_3`). Ver `OQ-061`, `OQ-063`.
+- `OBS-INV-031` Los campos no cargados se ven con valores por defecto en el legajo y en el listado (`OQ-058`, `OQ-059`, `OQ-060`).
+- `OBS-INV-032` Los placeholders de `#sociedad_select` y `#estab_soc` tienen `value=""` en este ambiente; `in_calidad` e `in_estado_corporal` usan ids como `value` (7.5 = 4, 3.5 = 6), por eso se eligen por texto.
+- Los envíos reales de esta exploración suman 4 tropas nuevas; los maestros usados (sociedad, establecimiento) son datos de stage y no se fijan en fixtures.

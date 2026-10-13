@@ -356,3 +356,90 @@ export const CALVES_PROFILE = {
   radios: ['destetados', 'no_capados', 'limpia'],
   dates: [{ target: DATE_WEANING }],
 }
+
+// ---------------------------------------------------------------------------
+// ofrecimientos-invernada-legajo-admin (TC-LEG-001 to TC-LEG-009): four flows.
+// Minimal profiles load ONLY quantity, category, first breed and first sale
+// term (no weight, segmentation or common fields). Full profiles load every
+// field the form shows for the category. Texts carry the `QA-LEG` suffix and
+// the current date so the tropa is identifiable; every date field is today.
+// ---------------------------------------------------------------------------
+export const LEGAJO_TAG = 'QA-LEG'
+
+export function todayText() {
+  const date = new Date()
+  const pad = (value) => String(value).padStart(2, '0')
+  return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`
+}
+
+const LEGAJO_DATE_WEANING = { name: 'in_fecha_destete' }
+
+export const LEG_TERNEROS_MIN = {
+  flow: 'F1',
+  caseNumber: 'TC-LEG-001',
+  category: CATEGORIES.CALVES,
+  minimal: true,
+  quantity: '37',
+  breeds: 1,
+  // Admin path (matrix of the plan): listing + "Ver Legajo".
+  adminPath: 'listing',
+}
+
+export const LEG_TERNERAS_FULL = {
+  flow: 'F2',
+  caseNumber: 'TC-LEG-002',
+  category: CATEGORIES.HEIFER_CALVES,
+  minimal: false,
+  quantity: '48',
+  weight: '180',
+  segmentation: {
+    in_cabeza_peso: '190', in_cabeza_cantidad: '2',
+    in_cuerpo_peso: '180', in_cuerpo_cantidad: '44',
+    in_cola_peso: '170', in_cola_cantidad: '2',
+  },
+  breeds: 2,
+  texts: { in_edad: '8', in_descarte: '5', in_desbaste: '4', in_distancia_pesada: '20' },
+  selects: { in_tratamiento_nutricional: 'Racionados' },
+  quality: '7.5',
+  bodyCondition: '3.5',
+  radios: ['si_marca', 'destetados', 'lucha', 'si_garrapata', 'no_miomio', 'si_plan', 'muy_buena', 'parejo', 'sociedad'],
+  dates: [{ target: LEGAJO_DATE_WEANING }],
+  clarification: () => `${LEGAJO_TAG} aclaración F2 ${todayText()}`,
+  video: true,
+  adminPath: 'search',
+}
+
+export const LEG_VACAS_MIN = {
+  flow: 'F3',
+  caseNumber: 'TC-LEG-003',
+  category: CATEGORIES.COWS_WITH_CALF,
+  minimal: true,
+  quantity: '22',
+  breeds: 1,
+  adminPath: 'search',
+}
+
+export const LEG_VACAS_FULL = {
+  flow: 'F4',
+  caseNumber: 'TC-LEG-004',
+  category: CATEGORIES.COWS_WITH_CALF,
+  minimal: false,
+  quantity: '26',
+  weight: '420',
+  segmentation: {
+    in_cabeza_peso: '430', in_cabeza_cantidad: '2',
+    in_cuerpo_peso: '420', in_cuerpo_cantidad: '22',
+    in_cola_peso: '410', in_cola_cantidad: '2',
+  },
+  breeds: 2,
+  texts: { in_edad: '5', in_descarte: '3', in_edad_cria: '4', in_peso_promedio_cria: '120' },
+  selects: { in_tratamiento_nutricional: 'A Corral', in_tipo_rodeo: 'Puro controlado', in_denticion: 'Boca Llena' },
+  quality: '7.5',
+  bodyCondition: '3.5',
+  radios: ['si_marca', 'sucia', 'no_garrapata', 'si_miomio', 'muy_buena', 'parejo', 'desparejo_cria'],
+  clarification: () => `${LEGAJO_TAG} aclaración F4 ${todayText()}`,
+  video: true,
+  adminPath: 'listing',
+}
+
+export const LEGAJO_PROFILES = [LEG_TERNEROS_MIN, LEG_TERNERAS_FULL, LEG_VACAS_MIN, LEG_VACAS_FULL]

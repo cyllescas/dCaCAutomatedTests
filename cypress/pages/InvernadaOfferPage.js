@@ -535,6 +535,47 @@ class InvernadaOfferPage {
     return chosen
   }
 
+  // Legajo flows (ofrecimientos-invernada-legajo-admin). Sibling of fillOffer:
+  // `profile.minimal` loads ONLY quantity, category, first breed and first sale
+  // term; otherwise every field of the profile is loaded (weight, segmentation,
+  // breeds, texts, selects, quality, body condition, radios, dates, remarks).
+  // The returned object is filled while the commands run: read it inside cy.then().
+  fillLegajoOffer(profile) {
+    const chosen = { breeds: [], category: profile.category }
+
+    this.selectCategory(profile.category)
+    this.typeQuantity(profile.quantity)
+    if (!profile.minimal) {
+      this.typeAverageWeight(profile.weight)
+      Object.entries(profile.segmentation).forEach(([name, value]) => this.visibleField(name).clear().type(value))
+    }
+
+    this.selectNthOption('re_raza', 0).then((text) => chosen.breeds.push(text))
+    for (let index = 1; index < profile.breeds; index += 1) {
+      this.clickAddBreed()
+      this.selectNthOption(`re_raza${index + 1}`, index).then((text) => chosen.breeds.push(text))
+    }
+    this.selectNthOption('in_plazo_select', 0).then((text) => {
+      chosen.saleTerm = text
+    })
+    if (profile.minimal) return chosen
+
+    Object.entries(profile.texts || {}).forEach(([name, value]) => this.visibleField(name).clear().type(value))
+    Object.entries(profile.selects || {}).forEach(([name, text]) => this.visibleField(name).select(text))
+    // Quality and body condition are chosen by text with decimals (a whole number matches another option's value).
+    this.visibleField('in_estado_corporal').select(profile.bodyCondition)
+    this.visibleField('in_calidad').select(profile.quality)
+    ;(profile.radios || []).forEach((id) => this.clickRadio(id))
+    ;(profile.dates || []).forEach(({ target }) => this.setDate(target))
+    chosen.clarification = typeof profile.clarification === 'function' ? profile.clarification() : profile.clarification
+    this.visibleField('re_aclaracion_cliente').clear().type(chosen.clarification)
+    return chosen
+  }
+
+  selectedEstablishmentText() {
+    return this.establishmentSelect().then(($select) => $select.find('option:selected').text().trim())
+  }
+
   submitOffer() {
     return cy.get('.btn_ofrecer.env').click()
   }
