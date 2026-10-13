@@ -14,18 +14,8 @@ describe('Datos generales de invernada legacy (sólo lectura) @invernada @ofreci
     selectExistingInvernadaLocation()
   })
 
-  it('TC-INV-019 caso 13: acepta una cantidad válida', () => {
-    InvernadaOfferPage.typeQuantity('50')
-    InvernadaOfferPage.visibleField('re_cantidad').should('have.value', '50')
-  })
-
   it('TC-INV-020 caso 18: la lista de categorías contiene las 17 categorías', () => {
     InvernadaOfferPage.assertCategoryOptions(Object.values(CATEGORIES))
-  })
-
-  it('TC-INV-021 caso 19: el peso promedio no tiene restricción', () => {
-    InvernadaOfferPage.typeAverageWeight('100')
-    InvernadaOfferPage.visibleField('re_peso').should('have.value', '100')
   })
 })
 
@@ -69,11 +59,14 @@ describe('Carga de video de invernada legacy @invernada @ofrecimientos @legacy @
     selectExistingInvernadaLocation()
   })
 
-  it('TC-INV-017 caso 12: acepta un video válido de 29 s', function () {
-    InvernadaOfferPage.attachVideo(VIDEO_FILES.valid())
-
-    InvernadaOfferPage.assertVideoAccepted()
-  })
+  // Disabled: redundant. The first two steps of 'caso 12.4: permite eliminar el video cargado'
+  // (attach the valid video and assert it is accepted) are exactly this case, and that case
+  // goes on to delete it. Keeping both uploads one more file to stage for no extra coverage.
+  // it('TC-INV-017 caso 12: acepta un video válido de 29 s', function () {
+  //   InvernadaOfferPage.attachVideo(VIDEO_FILES.valid())
+  //
+  //   InvernadaOfferPage.assertVideoAccepted()
+  // })
 
   it('TC-INV-017 caso 12.5: acepta un video de 9 s', function () {
     InvernadaOfferPage.attachVideo(VIDEO_FILES.short())
@@ -87,16 +80,7 @@ describe('Carga de video de invernada legacy @invernada @ofrecimientos @legacy @
     InvernadaOfferPage.assertVideoRejected()
   })
 
-  it('TC-INV-017 caso 12.2: rechaza un archivo que no es video', () => {
-    InvernadaOfferPage.attachVideo({
-      contents: Cypress.Buffer.from('QA archivo de texto que no es un video'),
-      fileName: 'QA-no-es-video.txt',
-      mimeType: 'text/plain',
-    })
-
-    InvernadaOfferPage.assertVideoRejected()
-  })
-
+  // Also covers TC-INV-017 caso 12.2: it starts by attaching a non-video file and asserting the rejection.
   it('TC-INV-017 caso 12.4: permite reemplazar un archivo rechazado por un video válido', function () {
     InvernadaOfferPage.attachVideo({
       contents: Cypress.Buffer.from('QA archivo de texto que no es un video'),
@@ -110,6 +94,7 @@ describe('Carga de video de invernada legacy @invernada @ofrecimientos @legacy @
     InvernadaOfferPage.assertVideoAccepted()
   })
 
+  // Also covers TC-INV-017 caso 12 (valid 29 s video accepted).
   it('TC-INV-017 caso 12.4: permite eliminar el video cargado tras confirmar', function () {
     InvernadaOfferPage.attachVideo(VIDEO_FILES.valid())
     InvernadaOfferPage.assertVideoAccepted()

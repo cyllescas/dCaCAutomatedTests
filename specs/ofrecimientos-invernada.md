@@ -230,6 +230,11 @@ obligatorios (High), altas inconsistentes (High) y divergencias por categoría
   nada. La verificación del video cargado queda diferida al estado siguiente
   (ver "Casos diferidos").
 - Automatizable: sí (aislamiento completo, envío real).
+- Cobertura actual (10/12/2026): el caso 12.3 ya no es un `it` propio; los perfiles de
+  TC-INV-032 sin `video` lo cubren (se envían sin video y se asierta que no aparece
+  el aviso). Los perfiles 69 (Terneros) y 77 (Vacas con cría) adjuntan antes el video
+  válido de 29 s, asiertan que se aceptó y luego envían; esa combinación (envío con video
+  adjunto) es la que cubren, sin agregar casos.
 
 ### TC-INV-019 — Cantidad: válida, vacía, cero, negativa y no numérica (casos 13 a 17)
 
@@ -418,6 +423,14 @@ obligatorios (High), altas inconsistentes (High) y divergencias por categoría
 | 84 | Vaquillonas para madre: Edad 15, Puro controlado |
 | 85 | Toros: Edad 3, Puro Pedigree, 4 Dientes |
 
+- Datos comunes (10/12/2026): además de los datos propios, cada envío completa Calidad 7.5,
+  Estado Corporal 3.5 (se usan decimales porque un entero coincidiría con el `value` de otra
+  opción), Sanidad Muy buena y Uniformidad Parejo, donde la categoría los muestra (MEJ no
+  muestra Calidad ni Sanidad; Toros no muestra Sanidad), y la Aclaración del cliente
+  (`re_aclaracion_cliente`), que el informe no muestra y por lo tanto no se verifica.
+- Fechas (10/12/2026): todas son la fecha actual. Los perfiles con Destetados o Capados SÍ
+  (69, 71) completan `in_fecha_destete` / `in_fecha_capado`; antes quedaban vacías y el
+  informe las mostraba como `00/00/0000`. No se asierta ninguna fecha en el informe.
 - Observación de exploración: sólo se envió el perfil de Terneros con otros
   datos (tropas #35417 y #35418). Los 17 perfiles exactos NO se enviaron durante
   la exploración. Se observó que sólo Cantidad, Categoría, Raza y Plazo de venta
@@ -461,9 +474,12 @@ obligatorios (High), altas inconsistentes (High) y divergencias por categoría
 | Fecha de destete (vacía) | 00/00/0000 | informe tab 2 | Diferencia de formato (OQ-057) |
 
 - Automatizable: sí. Se comparan con el listado los campos visibles en el ítem
-  (cantidad, categoría, peso, raza, sociedad, id) para las 17 categorías; la
-  comparación del informe (`#modal-informe`) sólo tiene selectores observados para
-  Terneros, el resto queda `missing_observed_selector` para el informe.
+  (cantidad, categoría, peso, raza, sociedad, id) para las 17 categorías. El informe
+  (`#modal-informe`, pestaña Características `#caracteristicas_de_tropa`) se compara
+  como líneas "Etiqueta: valor" (datos comunes y propios) en Terneros (69 y el caso
+  TC-INV-033), Vacas de invernada (76, dentición y rodeo), Vacas con cría (77, sólo la
+  edad: el informe no muestra los datos de la cría) y Vacas preñadas (80, tipo de
+  servicio). El resto de las categorías no se compara en el informe.
   Aislamiento completo; cada ejecución crea una tropa real.
 
 ### TC-INV-034 — Modal "El video no ha terminado de cargarse"

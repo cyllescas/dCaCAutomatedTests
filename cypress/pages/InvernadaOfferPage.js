@@ -1,4 +1,4 @@
-import { BASE_OFFER } from '../support/data/invernada_offer_data'
+import { BASE_OFFER, COMMON_DETAILS } from '../support/data/invernada_offer_data'
 import { waitForPartialLot } from '../support/helpers/invernada_trace_helper'
 
 const OPTIONS_LOAD_TIMEOUT = 60000
@@ -18,9 +18,8 @@ const selectableOptions = ($select) => [...$select.find('option')]
 
 const selectableTexts = ($select) => selectableOptions($select).map((option) => option.text)
 
-function formatDate(daysAgo) {
+function formatToday() {
   const date = new Date()
-  date.setDate(date.getDate() - daysAgo)
   const pad = (value) => String(value).padStart(2, '0')
   return `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`
 }
@@ -489,10 +488,24 @@ class InvernadaOfferPage {
 
   // ---- Offer filling and submission (TC-INV-018, 032, 033) -----------------
 
-  setDate(target, daysAgo) {
+  // Sets today's date; the widgets may be read-only pickers, so the value is set and the page notified.
+  setDate(target) {
     const selector = target.id ? `#${target.id}` : `[name="${target.name}"]`
-    // The date widgets may be read-only pickers; set the value and notify the page.
-    return cy.get(selector).filter(':visible').invoke('val', formatDate(daysAgo)).trigger('input').trigger('change')
+    const today = formatToday()
+    return cy.get(selector).filter(':visible').invoke('val', today).trigger('input').trigger('change').should('have.value', today)
+  }
+
+  // Quality, health, uniformity and remarks. Not every category shows quality or
+  // health (MEJ shows neither), so each one is filled only where the form offers it.
+  fillCommonDetails() {
+    this.visibleField('in_estado_corporal').select(COMMON_DETAILS.bodyCondition)
+    cy.get('body').then(($body) => {
+      if ($body.find('[name="in_calidad"]:visible').length) this.visibleField('in_calidad').select(COMMON_DETAILS.quality)
+      COMMON_DETAILS.radios.forEach((id) => {
+        if ($body.find(`label[for="${id}"]:visible`).length) this.clickRadio(id)
+      })
+    })
+    this.visibleField('re_aclaracion_cliente').clear().type(COMMON_DETAILS.clarification)
   }
 
   // Fills the whole form for a profile. The returned object is filled while
@@ -517,7 +530,8 @@ class InvernadaOfferPage {
     const radios = profile.radios || []
     const dates = profile.dates || []
     radios.forEach((id) => this.clickRadio(id))
-    dates.forEach(({ target, daysAgo }) => this.setDate(target, daysAgo))
+    dates.forEach(({ target }) => this.setDate(target))
+    this.fillCommonDetails()
     return chosen
   }
 

@@ -95,14 +95,15 @@ class InvernadaMyPublicationsPendingPage {
     return this.reportCharacteristicsButton().click()
   }
 
-  assertReportCharacteristics({ quantity, ageMonths, zone, weaned, castrated }) {
-    this.reportSuggestedQuantity().should(($el) => expect(`${$el.val() || ''}${$el.text()}`).to.contain(quantity))
-    this.reportCharacteristics().should(($el) => {
+  assertReportSuggestedQuantity(quantity) {
+    return this.reportSuggestedQuantity().should(($el) => expect(`${$el.val() || ''}${$el.text()}`).to.contain(quantity))
+  }
+
+  // `lines` are "Label: value" texts as the report prints them.
+  assertReportCharacteristics(lines) {
+    return this.reportCharacteristics().should(($el) => {
       const text = normalize($el.text())
-      expect(text).to.match(new RegExp(`${ageMonths}\\s*meses`))
-      expect(text).to.contain(normalize(zone))
-      expect(text).to.match(new RegExp(`destetados\\W*${weaned}`))
-      expect(text).to.match(new RegExp(`capados\\W*${castrated}`))
+      lines.forEach((line) => expect(text, `report line: ${line}`).to.contain(normalize(line)))
     })
   }
 }

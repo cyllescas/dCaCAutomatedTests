@@ -204,11 +204,27 @@ export const CATEGORY_FIELD_CASES = [
   },
 ]
 
+// Details every submission fills when the category shows them (MEJ has no quality
+// or health): quality and body condition selects, health and uniformity radios and the client remarks.
+// Quality and body condition are given as option text with a decimal: a whole number such as '3'
+// would match an option VALUE (not its text) and select a different option.
+export const COMMON_DETAILS = {
+  quality: '7.5',
+  bodyCondition: '3.5',
+  radios: ['muy_buena', 'parejo'],
+  clarification: 'QA aclaración del cliente',
+}
+
+// What the report shows for COMMON_DETAILS ("Label: value"); `report` in a profile adds its own lines.
+export const COMMON_REPORT_LINES = [
+  'Cantidad: 50', 'Calidad: 7.5', 'Sanidad: Muy buena', 'Estado Corporal: 3.5', 'Uniformidad: Parejo', 'Zona: Limpia',
+]
+
 // ---------------------------------------------------------------------------
 // TC-INV-032 / TC-INV-033: submission profiles (cases 69 to 85).
 // Base data: quantity 50, weight 250, segmentation 260/1, 250/48, 240/1, first
-// available breed and sale term. Dates are relative to "today" (days ago) so
-// they stay dynamic. `radios` are ids of hidden radio inputs (click label).
+// available breed and sale term. Every date is today's date, set
+// by the page. `radios` are ids of hidden radio inputs (click label).
 // ---------------------------------------------------------------------------
 export const BASE_OFFER = {
   quantity: '50',
@@ -220,6 +236,8 @@ export const BASE_OFFER = {
   },
 }
 
+const DATE_WEANING = { name: 'in_fecha_destete' }
+const DATE_CASTRATION = { name: 'in_fecha_capado' }
 const DATE_SERVICE = { id: 'fecha_servicio_input' }
 const DATE_INSEMINATION_START = { id: 'fecha_inicio_servicio_input' }
 const DATE_INSEMINATION_END = { name: 'in_fecha_servicio2' }
@@ -227,7 +245,16 @@ const DATE_REPASO_START = { name: 'in_inicio_repaso' }
 const DATE_REPASO_END = { name: 'in_fin_repaso' }
 
 export const SUBMIT_PROFILES = [
-  { caseNumber: 69, category: CATEGORIES.CALVES, breeds: 1, texts: { in_edad: '7' }, radios: ['destetados', 'capados', 'limpia'] },
+  {
+    caseNumber: 69,
+    category: CATEGORIES.CALVES,
+    breeds: 1,
+    texts: { in_edad: '7' },
+    radios: ['destetados', 'capados', 'limpia'],
+    dates: [{ target: DATE_WEANING }, { target: DATE_CASTRATION }],
+    report: ['Edad: 7 Meses', 'Capados: Sí', 'Destetados: Sí'],
+    video: true,
+  },
   {
     caseNumber: 70,
     category: CATEGORIES.HEIFER_CALVES,
@@ -241,6 +268,7 @@ export const SUBMIT_PROFILES = [
     breeds: 1,
     texts: { in_edad: '7', in_cantidad_machos: '25', in_cantidad_hembras: '25' },
     radios: ['destetados', 'no_capados', 'sucia', 'si_garrapata', 'no_miomio'],
+    dates: [{ target: DATE_WEANING }],
   },
   { caseNumber: 72, category: CATEGORIES.YOUNG_STEERS, breeds: 1, texts: { in_edad: '14' }, selects: { in_tratamiento_nutricional: 'Praderas y/o Verdeos' }, radios: ['limpia'] },
   { caseNumber: 73, category: CATEGORIES.HEIFERS, breeds: 3, texts: { in_edad: '14' }, radios: ['limpia'] },
@@ -259,6 +287,7 @@ export const SUBMIT_PROFILES = [
     texts: { in_edad: '6' },
     selects: { in_denticion: 'Boca Llena', in_tipo_rodeo: 'Rodeo General' },
     radios: ['limpia'],
+    report: ['Edad: 6 Años', 'Denticion: Boca Llena', 'Tipo Rodeo: Rodeo General'],
   },
   {
     caseNumber: 77,
@@ -266,6 +295,8 @@ export const SUBMIT_PROFILES = [
     breeds: 1,
     texts: { in_edad: '5', in_edad_cria: '4', in_peso_promedio_cria: '120' },
     radios: ['parejo_cria'],
+    report: ['Edad: 5 Años'],
+    video: true,
   },
   {
     caseNumber: 78,
@@ -281,7 +312,8 @@ export const SUBMIT_PROFILES = [
     breeds: 1,
     texts: { in_edad: '5' },
     radios: ['inseminacion', 'fijo'],
-    dates: [{ target: DATE_SERVICE, daysAgo: 90 }],
+    dates: [{ target: DATE_SERVICE }],
+    report: ['Edad: 5 Años', 'Tipo de Servicio: Inseminación', 'Inseminación Tipo: A tiempo fijo'],
   },
   {
     caseNumber: 81,
@@ -289,7 +321,7 @@ export const SUBMIT_PROFILES = [
     breeds: 1,
     texts: { in_edad: '8' },
     radios: ['natural'],
-    dates: [{ target: DATE_INSEMINATION_START, daysAgo: 90 }, { target: DATE_INSEMINATION_END, daysAgo: 60 }],
+    dates: [{ target: DATE_INSEMINATION_START }, { target: DATE_INSEMINATION_END }],
   },
   {
     caseNumber: 82,
@@ -305,10 +337,10 @@ export const SUBMIT_PROFILES = [
     texts: { in_edad: '20' },
     radios: ['mas_repaso', 'deteccion'],
     dates: [
-      { target: DATE_INSEMINATION_START, daysAgo: 90 },
-      { target: DATE_INSEMINATION_END, daysAgo: 75 },
-      { target: DATE_REPASO_START, daysAgo: 60 },
-      { target: DATE_REPASO_END, daysAgo: 45 },
+      { target: DATE_INSEMINATION_START },
+      { target: DATE_INSEMINATION_END },
+      { target: DATE_REPASO_START },
+      { target: DATE_REPASO_END },
     ],
   },
   { caseNumber: 84, category: CATEGORIES.HEIFERS_FOR_BREEDING, breeds: 1, texts: { in_edad: '15' }, selects: { in_tipo_rodeo: 'Puro controlado' } },
@@ -322,4 +354,5 @@ export const CALVES_PROFILE = {
   breeds: 1,
   texts: { in_edad: '7' },
   radios: ['destetados', 'no_capados', 'limpia'],
+  dates: [{ target: DATE_WEANING }],
 }

@@ -4,7 +4,7 @@ import InvernadaMyPublicationsPendingPage from '../../pages/InvernadaMyPublicati
 import { credentialsFor, skipWhenCredentialsAreMissing } from '../../support/helpers/login_helper'
 import { selectExistingInvernadaLocation, visitInvernadaOfferForm } from '../../support/helpers/invernada_offer_helper'
 import { captureTropaId, observeLotRequests } from '../../support/helpers/invernada_trace_helper'
-import { BASE_OFFER, CALVES_PROFILE, SUBMIT_PROFILES, ZONES } from '../../support/data/invernada_offer_data'
+import { BASE_OFFER, CALVES_PROFILE, COMMON_REPORT_LINES, SUBMIT_PROFILES, VIDEO_FILES } from '../../support/data/invernada_offer_data'
 
 const credentials = credentialsFor('TEST_CLIENT_USERNAME', 'TEST_CLIENT_PASSWORD')
 
@@ -27,6 +27,10 @@ function submitProfile(profile) {
   observeLotRequests()
   selectExistingInvernadaLocation()
   const offer = InvernadaOfferPage.fillOffer(profile)
+  if (profile.video) {
+    InvernadaOfferPage.attachVideo(VIDEO_FILES.valid())
+    InvernadaOfferPage.assertVideoAccepted()
+  }
   InvernadaOfferPage.selectedSocietyText().then((society) => {
     offer.society = society
   })
@@ -40,8 +44,9 @@ describe('Envío de ofrecimientos de invernada legacy @invernada @ofrecimientos 
     visitInvernadaOfferForm(credentials)
   })
 
-  // Every profile is submitted without video, so each case also covers TC-INV-018 caso 12.3
-  // (the submission does not go through the "video not finished" prompt).
+  // Profiles with `video: true` (Terneros, Vacas con cría) attach the valid video before
+  // submitting; the rest go without video (TC-INV-018 caso 12.3). Neither goes through the
+  // "video not finished" prompt.
   profiles.forEach((profile) => {
     it(`TC-INV-032 caso ${profile.caseNumber}: ofrece ${profile.category} y verifica la tropa en Pendientes (TC-INV-033)`, () => {
       cy.url().then((urlBefore) => {
@@ -61,6 +66,12 @@ describe('Envío de ofrecimientos de invernada legacy @invernada @ofrecimientos 
               society: offer.society,
             })
           })
+          // Profiles with `report` also check their report (one per family: calves, rodeo/teeth, cow with calf, pregnancy).
+          if (profile.report) {
+            InvernadaMyPublicationsPendingPage.openReport(tropaId)
+            InvernadaMyPublicationsPendingPage.openReportCharacteristics()
+            InvernadaMyPublicationsPendingPage.assertReportCharacteristics([...COMMON_REPORT_LINES, ...profile.report])
+          }
         })
       })
     })
@@ -75,13 +86,13 @@ describe('Envío de ofrecimientos de invernada legacy @invernada @ofrecimientos 
       InvernadaMyPublicationsPendingPage.openReport(tropaId)
       InvernadaMyPublicationsPendingPage.assertReportSegmentation(BASE_OFFER)
       InvernadaMyPublicationsPendingPage.openReportCharacteristics()
-      InvernadaMyPublicationsPendingPage.assertReportCharacteristics({
-        quantity: BASE_OFFER.quantity,
-        ageMonths: CALVES_PROFILE.texts.in_edad,
-        zone: ZONES.LIMPIA,
-        weaned: 's[ií]',
-        castrated: 'no',
-      })
+      InvernadaMyPublicationsPendingPage.assertReportSuggestedQuantity(BASE_OFFER.quantity)
+      InvernadaMyPublicationsPendingPage.assertReportCharacteristics([
+        ...COMMON_REPORT_LINES,
+        `Edad: ${CALVES_PROFILE.texts.in_edad} Meses`,
+        'Destetados: Sí',
+        'Capados: No',
+      ])
     })
   })
 })
