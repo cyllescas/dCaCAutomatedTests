@@ -1,4 +1,6 @@
 class FaenaOfferPage {
+  // ── Selectores ──
+
   societySelect() {
     return cy.get('#sociedad_select')
   }
@@ -7,46 +9,8 @@ class FaenaOfferPage {
     return cy.get("select[name='ng_establecimiento']")
   }
 
-  selectedSocietyName() {
-    return this.societySelect().find('option:selected').invoke('text').then((text) => text.trim())
-  }
-
-  selectedEstablishmentName() {
-    return this.establishmentSelect().find('option:selected').invoke('text').then((text) => text.trim())
-  }
-
   establishmentMenu() {
     return cy.get('#estab')
-  }
-
-  selectFirstAvailableSociety() {
-    const configured = Cypress.env('FAENA_SOCIETY_VALUE')
-    if (configured) {
-      return this.societySelect().select(configured)
-    }
-
-    return this.societySelect().find('option').then(($options) => {
-      const option = [...$options].find((item) => item.value && item.value !== 'crear')
-      expect(option, 'available society').to.exist
-      this.societySelect().select(option.value)
-    })
-  }
-
-  selectFirstAvailableEstablishment() {
-    const configured = Cypress.env('FAENA_ESTABLISHMENT_VALUE')
-    if (configured) {
-      return this.establishmentSelect().select(configured)
-    }
-
-    return this.establishmentSelect().should('be.visible').find('option').then(($options) => {
-      const option = [...$options].find((item) => item.value && item.value !== 'crear')
-      expect(option, 'available establishment').to.exist
-      return this.establishmentSelect().select(option.value).should('have.value', option.value)
-    })
-  }
-
-  openNewSociety() {
-    return this.societySelect().select('crear').then(() => this.societyModal().should('be.visible'))
   }
 
   newSocietyNameField() {
@@ -55,10 +19,6 @@ class FaenaOfferPage {
 
   newSocietyCuitField() {
     return cy.get('#cuit')
-  }
-
-  openNewEstablishment() {
-    return this.establishmentMenu().select('crear').then(() => this.establishmentModal().should('be.visible'))
   }
 
   newEstablishmentNameField() {
@@ -91,6 +51,58 @@ class FaenaOfferPage {
 
   breedSelect() {
     return cy.get("select[name='ng_raza']")
+  }
+
+  confirmationMessage() {
+    return cy.contains('Su tropa ha sido creada correctamente')
+  }
+
+  operationsLink() {
+    return cy.get('a').contains(/^operaciones$/)
+  }
+
+  // ── Métodos ──
+
+  selectedSocietyName() {
+    return this.societySelect().find('option:selected').invoke('text').then((text) => text.trim())
+  }
+
+  selectedEstablishmentName() {
+    return this.establishmentSelect().find('option:selected').invoke('text').then((text) => text.trim())
+  }
+
+  selectFirstAvailableSociety() {
+    const configured = Cypress.env('FAENA_SOCIETY_VALUE')
+    if (configured) {
+      return this.societySelect().select(configured)
+    }
+
+    return this.societySelect().find('option').then(($options) => {
+      const option = [...$options].find((item) => item.value && item.value !== 'crear')
+      expect(option, 'available society').to.exist
+      this.societySelect().select(option.value)
+    })
+  }
+
+  selectFirstAvailableEstablishment() {
+    const configured = Cypress.env('FAENA_ESTABLISHMENT_VALUE')
+    if (configured) {
+      return this.establishmentSelect().select(configured)
+    }
+
+    return this.establishmentSelect().should('be.visible').find('option').then(($options) => {
+      const option = [...$options].find((item) => item.value && item.value !== 'crear')
+      expect(option, 'available establishment').to.exist
+      return this.establishmentSelect().select(option.value).should('have.value', option.value)
+    })
+  }
+
+  openNewSociety() {
+    return this.societySelect().select('crear').then(() => this.societyModal().should('be.visible'))
+  }
+
+  openNewEstablishment() {
+    return this.establishmentMenu().select('crear').then(() => this.establishmentModal().should('be.visible'))
   }
 
   chooseRadio(id) {
@@ -167,14 +179,6 @@ class FaenaOfferPage {
 
   submitOffer() {
     return cy.get('div._boot.btn_agregar_listado.env').contains('Ofrecer tropa').click()
-  }
-
-  confirmationMessage() {
-    return cy.contains('Su tropa ha sido creada correctamente')
-  }
-
-  operationsLink() {
-    return cy.get('a').contains(/^operaciones$/)
   }
 }
 

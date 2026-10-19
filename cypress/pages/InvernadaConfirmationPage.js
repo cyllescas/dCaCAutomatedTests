@@ -4,6 +4,8 @@ const normalize = (text) => String(text).replace(/\s+/g, ' ').trim().toLowerCase
 
 // Confirmation view shown after "Ofrecer Tropa".
 class InvernadaConfirmationPage {
+  // ── Selectores ──
+
   // Submission is asynchronous (3 to 5 s): wait for the confirmation title.
   title() {
     return cy.get('.titulo_tropa_cargada', { timeout: OFFER_CREATION_TIMEOUT })
@@ -18,6 +20,8 @@ class InvernadaConfirmationPage {
   newOfferButton() {
     return cy.get('.btn_topa_cargada')
   }
+
+  // ── Métodos ──
 
   assertOfferCreated() {
     this.title().should('be.visible').and('contain.text', 'Su tropa ha sido creada correctamente')

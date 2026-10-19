@@ -2,6 +2,8 @@
 const INVERNADA_OPTION = /^\s*invernada\s*$/i
 
 class AdminSearchPage {
+  // ── Selectores ──
+
   searchInput() {
     return cy.get('#busca_i', { timeout: 60000 })
   }
@@ -13,6 +15,8 @@ class AdminSearchPage {
   invernadaOption() {
     return this.options().filter((index, element) => INVERNADA_OPTION.test(element.textContent))
   }
+
+  // ── Métodos ──
 
   // The search is by number only (OQ-065: it is not exclusive to tropaId).
   searchTropa(tropaId) {

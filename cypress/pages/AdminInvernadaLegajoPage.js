@@ -43,6 +43,8 @@ function describeCandidates($root, label) {
 
 // Admin legajo of a tropa (`#agregarinvernada`). Read-only: never use Guardar, Publicar, Editar or Eliminar.
 class AdminInvernadaLegajoPage {
+  // ── Selectores ──
+
   root() {
     return cy.get(ROOT, { timeout: LEGAJO_LOAD_TIMEOUT })
   }
@@ -86,6 +88,8 @@ class AdminInvernadaLegajoPage {
   closeButton() {
     return cy.get('a[onclick="cerrarLote();location.reload();"]')
   }
+
+  // ── Métodos ──
 
   // Waits until the legajo shown is the one of the tropa (OQ-065: opening it from the search must be verified).
   assertOpenedFor(tropaId) {

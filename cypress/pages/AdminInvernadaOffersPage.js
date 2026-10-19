@@ -4,6 +4,8 @@ const INVERNADA_MENU = /^\s*INVERNADA\s*\d*\s*$/
 
 // Admin home > INVERNADA > Ofrecimientos: one `div#fila_<tropaId>` per tropa.
 class AdminInvernadaOffersPage {
+  // ── Selectores ──
+
   // Exact menu text inside its container: other menus (FAENA, ...) share `a.dropdown-toggle`.
   invernadaMenu() {
     return cy.get('nav#navbar a.dropdown-toggle', { timeout: 60000 })
@@ -28,28 +30,8 @@ class AdminInvernadaOffersPage {
     return cy.get('#listadoOfrecimientos', { timeout: LISTING_LOAD_TIMEOUT })
   }
 
-  openOfferings() {
-    this.invernadaMenu().click()
-    this.offersLink().filter(':visible').click()
-    cy.task('trace', 'admin: Ofrecimientos link clicked, waiting for rows', { log: false })
-    // The listing is slow: "Cargando..." must disappear before looking for a row.
-    // Rows first (cheap), then the loading message must be gone: the page holds 100 tropas.
-    this.firstRow().should('exist')
-    cy.task('trace', 'admin: first row present, waiting for "Cargando..." to go', { log: false })
-    return this.loadingIndicator().should(($body) => {
-      expect($body.find('.loading-listado:visible'), 'visible "Cargando..." indicator').to.have.length(0)
-    })
-  }
-
   row(tropaId) {
     return cy.get(`#fila_${tropaId}`, { timeout: LISTING_LOAD_TIMEOUT })
-  }
-
-  // OQ-066: pages of 100, newest first. A missing row is reported clearly.
-  assertRowListed(tropaId) {
-    return this.listing().should(($listing) => {
-      expect($listing.find(`#fila_${tropaId}`).length, `tropa #${tropaId} listed in the first page of Ofrecimientos`).to.eq(1)
-    })
   }
 
   society(tropaId) {
@@ -74,6 +56,28 @@ class AdminInvernadaOffersPage {
 
   viewLegajoButton(tropaId) {
     return this.row(tropaId).find('a[onclick^="cargar_form_invernada"]')
+  }
+
+  // ── Métodos ──
+
+  openOfferings() {
+    this.invernadaMenu().click()
+    this.offersLink().filter(':visible').click()
+    cy.task('trace', 'admin: Ofrecimientos link clicked, waiting for rows', { log: false })
+    // The listing is slow: "Cargando..." must disappear before looking for a row.
+    // Rows first (cheap), then the loading message must be gone: the page holds 100 tropas.
+    this.firstRow().should('exist')
+    cy.task('trace', 'admin: first row present, waiting for "Cargando..." to go', { log: false })
+    return this.loadingIndicator().should(($body) => {
+      expect($body.find('.loading-listado:visible'), 'visible "Cargando..." indicator').to.have.length(0)
+    })
+  }
+
+  // OQ-066: pages of 100, newest first. A missing row is reported clearly.
+  assertRowListed(tropaId) {
+    return this.listing().should(($listing) => {
+      expect($listing.find(`#fila_${tropaId}`).length, `tropa #${tropaId} listed in the first page of Ofrecimientos`).to.eq(1)
+    })
   }
 
   openLegajo(tropaId) {

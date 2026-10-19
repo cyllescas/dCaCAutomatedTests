@@ -25,6 +25,8 @@ function formatToday() {
 }
 
 class InvernadaOfferPage {
+  // ── Selectores ──
+
   societySelect(options) {
     return cy.get('#sociedad_select', options)
   }
@@ -45,6 +47,53 @@ class InvernadaOfferPage {
     return this.field(name).filter(':visible')
   }
 
+  visibleLabel(label) {
+    return cy.contains('.label_form_rapido, label', label).filter(':visible').first()
+  }
+
+  serviceSection() {
+    return cy.get('#informe_servicioDiv')
+  }
+
+  sanitaryZoneFields() {
+    return cy.get('#garrapataDiv, #miomioDiv').filter(':visible')
+  }
+
+  societyModal() {
+    return cy.get('#modal_crear')
+  }
+
+  establishmentModal() {
+    return cy.get('#modal-establecimiento-edit')
+  }
+
+  radioLabel(id) {
+    return cy.get(`label[for="${id}"]`).filter(':visible')
+  }
+
+  radioInput(id) {
+    return cy.get(`input[id="${id}"]`)
+  }
+
+  labelsMatching(text) {
+    return cy.get('.label_form_rapido, label').filter(':visible')
+      .filter((index, element) => normalize(element.textContent).includes(normalize(text)))
+  }
+
+  breedButton() {
+    return cy.get('.btn_agregar_listado.agr_raza').filter(':visible')
+  }
+
+  videoButton() {
+    return cy.get('.btn_subir_video')
+  }
+
+  videoResult() {
+    return cy.get('#seccion_archivos', { timeout: VIDEO_RESULT_TIMEOUT })
+  }
+
+  // ── Métodos ──
+
   assertVisibleFields(names, description) {
     names.forEach((name) => {
       this.visibleField(name).should('be.visible', `${description}: ${name}`)
@@ -55,10 +104,6 @@ class InvernadaOfferPage {
     names.forEach((name) => {
       this.visibleField(name).should('not.exist', `${description}: ${name}`)
     })
-  }
-
-  visibleLabel(label) {
-    return cy.contains('.label_form_rapido, label', label).filter(':visible').first()
   }
 
   assertVisibleLabels(labels, description) {
@@ -84,20 +129,12 @@ class InvernadaOfferPage {
     })
   }
 
-  serviceSection() {
-    return cy.get('#informe_servicioDiv')
-  }
-
   selectServiceType(label) {
     return cy.contains('label', label).filter(':visible').click()
   }
 
   selectZone(label) {
     return cy.contains('label', label).filter(':visible').click()
-  }
-
-  sanitaryZoneFields() {
-    return cy.get('#garrapataDiv, #miomioDiv').filter(':visible')
   }
 
   selectFirstAvailableSociety() {
@@ -127,14 +164,6 @@ class InvernadaOfferPage {
       this.establishmentSelect({ timeout: OPTIONS_LOAD_TIMEOUT }).should('be.visible'),
       'available invernada establishment',
     )
-  }
-
-  societyModal() {
-    return cy.get('#modal_crear')
-  }
-
-  establishmentModal() {
-    return cy.get('#modal-establecimiento-edit')
   }
 
   openNewSociety() {
@@ -353,14 +382,6 @@ class InvernadaOfferPage {
 
   // ---- Radios, labels and option lists (TC-INV-020 to TC-INV-031) ----------
 
-  radioLabel(id) {
-    return cy.get(`label[for="${id}"]`).filter(':visible')
-  }
-
-  radioInput(id) {
-    return cy.get(`input[id="${id}"]`)
-  }
-
   clickRadio(id) {
     return this.radioLabel(id).click()
   }
@@ -401,11 +422,6 @@ class InvernadaOfferPage {
 
   assertVisibleIds(ids, description) {
     ids.forEach((id) => cy.get(`[id="${id}"]`).filter(':visible').should('have.length.greaterThan', 0, `${description}: #${id}`))
-  }
-
-  labelsMatching(text) {
-    return cy.get('.label_form_rapido, label').filter(':visible')
-      .filter((index, element) => normalize(element.textContent).includes(normalize(text)))
   }
 
   assertLabelsShown(labels, description) {
@@ -457,10 +473,6 @@ class InvernadaOfferPage {
     return cy.get(VISIBLE_CONTROLS).should(($elements) => {
       expect($elements.length, 'visible controls').to.eq(expected)
     })
-  }
-
-  breedButton() {
-    return cy.get('.btn_agregar_listado.agr_raza').filter(':visible')
   }
 
   clickAddBreed() {
@@ -593,14 +605,6 @@ class InvernadaOfferPage {
   }
 
   // ---- Video (TC-INV-017) --------------------------------------------------
-
-  videoButton() {
-    return cy.get('.btn_subir_video')
-  }
-
-  videoResult() {
-    return cy.get('#seccion_archivos', { timeout: VIDEO_RESULT_TIMEOUT })
-  }
 
   // Real flow: the button creates the partial lot first (POST ?parcial=true) and
   // only then the file can be attached; attaching earlier uploads to lote=undefined.

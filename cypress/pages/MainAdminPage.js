@@ -36,12 +36,6 @@ class MainAdminPage{
     offersSearchField(){
         return cy.get('input[placeholder="Buscar en el listado..."]')
     }
-    searchFaenaOffer(lot){
-        return this.offersSearchField().clear().type(String(lot)).type('{enter}')
-    }
-    faenaOfferResult(lot){
-        return cy.contains(`#${lot}`, { timeout: 60000 }).should('be.visible')
-    }
     viewLegajoButton(){
         return cy.contains('Ver legajo', { timeout: 60000 }).should('be.visible')
     }
@@ -55,5 +49,12 @@ class MainAdminPage{
         return cy.get(':nth-child(6) > .dropdown-toggle').contains('OFERTAS')
     }
 
+    // Métodos
+    searchFaenaOffer(lot){
+        return this.offersSearchField().clear().type(String(lot)).type('{enter}')
+    }
+    faenaOfferResult(lot){
+        return cy.contains(`#${lot}`, { timeout: 60000 }).should('be.visible')
+    }
 }
 export default new MainAdminPage();

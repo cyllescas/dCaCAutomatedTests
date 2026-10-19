@@ -5,14 +5,7 @@ const normalize = (text) => String(text).replace(/\s+/g, ' ').trim().toLowerCase
 // Pendientes de publicacion list (/__dcac/misPublicaciones), reached from the
 // "operaciones" link of the confirmation view.
 class InvernadaMyPublicationsPendingPage {
-  // Each tropa is one `.listado` block holding a single `.id_titulo_lote` ("#<id>").
-  // Pendientes has no id search, so the block is found by the exact text of that id
-  // ("#354" must not match "#35417"); the text carries surrounding whitespace.
-  pendingItem(tropaId) {
-    return cy.get('#contenido-listado .listado', { timeout: OPERATIONS_LOAD_TIMEOUT })
-      .filter((index, element) => Cypress.$(element).find('.id_titulo_lote').text().trim() === `#${tropaId}`)
-      .should('have.length', 1)
-  }
+  // ── Selectores ──
 
   lotId() {
     return cy.get('.id_titulo_lote')
@@ -60,6 +53,17 @@ class InvernadaMyPublicationsPendingPage {
 
   reportCharacteristics() {
     return cy.get('#caracteristicas_de_tropa')
+  }
+
+  // ── Métodos ──
+
+  // Each tropa is one `.listado` block holding a single `.id_titulo_lote` ("#<id>").
+  // Pendientes has no id search, so the block is found by the exact text of that id
+  // ("#354" must not match "#35417"); the text carries surrounding whitespace.
+  pendingItem(tropaId) {
+    return cy.get('#contenido-listado .listado', { timeout: OPERATIONS_LOAD_TIMEOUT })
+      .filter((index, element) => Cypress.$(element).find('.id_titulo_lote').text().trim() === `#${tropaId}`)
+      .should('have.length', 1)
   }
 
   assertPendingItem(tropaId, expected) {
