@@ -1,13 +1,47 @@
 import FaenaOfferPage from '../../pages/FaenaOfferPage'
 import MainAdminPage from '../../pages/MainAdminPage'
-import { loginWithSession, verifyLoginSuccessAsAdmin } from './login_helper'
+import MainClientPage from '../../pages/MainClientPage'
+import OfferPage from '../../pages/OfferPage'
+import { loginWithSession, verifyLoginSuccessAsAdmin, verifyLoginSuccessAsClient } from './login_helper'
+
+const LOT_ENDPOINT = '**/MODULOS/directo/modulo_crearLote/index.php*'
+const OFFER_LOT_ALIAS = 'faenaOfferLot'
+
+// Restores the client session and walks Cotizar > Faena to the offer form.
+export function visitFaenaOfferForm(credentials) {
+  cy.visit('/__dcac/')
+  loginWithSession(credentials.username, credentials.password)
+  verifyLoginSuccessAsClient()
+  MainClientPage.mainCotizarButton().click()
+  OfferPage.offerFaenaButton().click()
+  FaenaOfferPage.offerTitle().should('be.visible')
+  FaenaOfferPage.societySelect().should('be.visible')
+}
+
+// Register BEFORE submitting. Tags only the final offer request (not the partial one of the video flow);
+// the UI request is observed, never stubbed or replayed.
+export function observeFaenaLotRequest() {
+  cy.intercept('POST', LOT_ENDPOINT, (req) => {
+    if (!req.url.includes('parcial=true')) req.alias = OFFER_LOT_ALIAS
+  })
+}
+
+// The response body of the offer request is the plain lot number; the value stays in memory only.
+export function captureFaenaLot() {
+  return cy.wait(`@${OFFER_LOT_ALIAS}`, { timeout: 60000 }).then(({ response }) => {
+    expect(response?.statusCode).to.eq(200)
+    const lot = String(response?.body).trim()
+    expect(lot, 'lot number returned by the offer request').to.match(/^\d+$/)
+    return lot
+  })
+}
 
 export function captureSubmittedOffer() {
   FaenaOfferPage.selectedSocietyName().as('submittedSociety')
   FaenaOfferPage.selectedEstablishmentName().as('submittedEstablishment')
 }
 
-export function validateCreatedLotInAdmin(lotAlias, adminCredentials) {
+export function validateCreatedLotInAdmin(lotAlias, adminCredentials, expected) {
   cy.visit('/__dcac/?logout')
   cy.visit('/__dcac/')
   loginWithSession(adminCredentials.username, adminCredentials.password, 'admin')
@@ -25,12 +59,9 @@ export function validateCreatedLotInAdmin(lotAlias, adminCredentials) {
     MainAdminPage.searchFaenaOffer(lot)
     MainAdminPage.faenaOfferResult(lot)
     MainAdminPage.viewLegajoButton().click()
+    const checks = expected || ['Vaca gorda', 'Aberdeen Angus Negro', '425', 'Feedlot', 'Consumo']
     cy.get('body').should('contain', String(lot))
-      .and('contain', 'Vaca gorda')
-      .and('contain', 'Aberdeen Angus Negro')
-      .and('contain', '425')
-      .and('contain', 'Feedlot')
-      .and('contain', 'Consumo')
+    checks.forEach((text) => cy.get('body').should('contain', text))
     cy.get('@submittedSociety').then((society) => {
       cy.get('body').should('contain', society)
     })
