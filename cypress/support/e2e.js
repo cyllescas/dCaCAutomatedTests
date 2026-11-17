@@ -15,6 +15,10 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands'
+import registerCypressGrep from '@cypress/grep/src/support'
+
+// Filters tests by tag (--env grepTags=@smoke); required by the npm test:* scripts.
+registerCypressGrep()
 
 
 Cypress.on('uncaught:exception', (err) => {

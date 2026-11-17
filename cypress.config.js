@@ -42,6 +42,8 @@ module.exports = defineConfig({
     downloadsFolder: 'artifacts/cypress/downloads',
     retries: process.env.CI ? 2 : 0,
     setupNodeEvents(on, config) {
+      // Enables the grepTags filters (npm run test:smoke / test:regression / test:sanity) and spec pre-filtering.
+      require('@cypress/grep/src/plugin')(config);
       on('after:spec', (spec, results) => {
         if (results && results.tests) createFailureReports(results, config.projectRoot);
       });

@@ -4,7 +4,12 @@ import MainAdminPage from "../../pages/MainAdminPage";
 import MainAgentPage from "../../pages/MainAgentPage";
 import MainCommercialPartnerPage from "../../pages/MainCommercialPartnerPage";
 
+// The login fields of the php8-upgrade environment drop characters when typed at full speed
+// (observed: "dcac-73820@..." became "dca820@..."), so credentials are typed with a small delay.
+const TYPING_DELAY_MS = 60
+
 export function login(username, password) {
+    LoginPage.openLoginModalIfNeeded()
     LoginPage.usernameField().should('be.visible', { timeout: 60000 })
     LoginPage.passwordField().should('be.visible', { timeout: 60000 })
     fillLoginFields(username, password)
@@ -16,7 +21,7 @@ export function login(username, password) {
 // invalid credentials and must submit the form every time.
 export function loginWithSession(username, password, expectedRole = 'client', { landingPath = '/__dcac/', validatePath = '/__dcac/' } = {}) {
     cy.session(
-        ['dcac-authenticated-user', expectedRole, username],
+        ['dcac-authenticated-user', Cypress.config('baseUrl'), expectedRole, username],
         () => {
             cy.visit('/__dcac/')
             login(username, password)
@@ -78,13 +83,19 @@ export function skipWhenCredentialsAreMissing(testContext, credentials, role) {
 }
 
 export function fillLoginFields(username, password) {
-    if (username) {
-        LoginPage.usernameField().should('be.visible', { timeout: 60000 }).type(username)
-    }
-    if (password) {
-        LoginPage.passwordField().should('be.visible', { timeout: 60000 }).type(password)
-    }
+    if (username) typeAndVerify(() => LoginPage.usernameField(), username)
+    if (password) typeAndVerify(() => LoginPage.passwordField(), password)
+}
 
+// Types a value and checks the field kept every character, retrying otherwise.
+// The value is never printed: it can be a password.
+function typeAndVerify(getField, value, attempts = 3) {
+    getField().should('be.visible', { timeout: 60000 }).clear().type(value, { delay: TYPING_DELAY_MS })
+    getField().invoke('val').then((current) => {
+        if (current === value) return
+        expect(attempts, 'attempts left after the field lost characters while typing').to.be.greaterThan(1)
+        typeAndVerify(getField, value, attempts - 1)
+    })
 }
 
 export function verifyLoginSuccessAsClient() {

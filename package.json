@@ -9,13 +9,14 @@
   "scripts": {
     "test": "cypress run",
     "test:all": "cypress run",
-    "test:regression": "cypress run --env grepTags=@regression",
-    "test:smoke": "cypress run --env grepTags=@smoke",
-    "test:sanity": "cypress run --env grepTags=@sanity",
+    "test:regression": "cypress run --env grep=@regression,grepFilterSpecs=true",
+    "test:smoke": "cypress run --env grep=@smoke,grepFilterSpecs=true",
+    "test:sanity": "cypress run --env grep=@sanity,grepFilterSpecs=true",
     "qa:validate": "node scripts/validate-qa-contracts.cjs",
     "qa:validate:feature": "node scripts/validate-qa-contracts.cjs ofrecimientos-invernada"
   },
   "devDependencies": {
+    "@cypress/grep": "^4.1.1",
     "@playwright/test": "^1.62.1",
     "@types/node": "^26.4.0",
     "cypress": "^15.2.0",
