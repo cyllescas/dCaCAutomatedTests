@@ -104,3 +104,15 @@ Evidencia: `artifacts/faena-razas.png`, `artifacts/faena-solo-falta-fecha.png`.
   `#fileuploadVideo` (`accept` video/*); resultado en `.videos_subidos`. El usuario ve el error del video de
   4 s (OQ-071).
 - Ver OQ-070 y OQ-071 (diferencias entre lo que ve el usuario y lo observado con Playwright MCP).
+
+### Admin, listado y legajo de faena — 2026-11-17
+
+- El Admin vive en la raíz (`https://stage.dcac.ar/`, título `Admin DCAC ->`); `/__dcac/` muestra la vista cliente
+  aun con el usuario admin. La sesión admin se valida en `/`.
+- Listado `?ofrecimientos=&secc=f&tit=0&busqueda=<lote>`: fila `#fila_<lote>` (categoría `.categoria`, peso `.peso`,
+  establecimiento `.nombre`). El enlace `N` (`title="Ver Resumen Negocio"`) abre sólo un panel flotante de comentarios.
+- `Ver Legajo` (con L mayúscula) es `span.s-turque` en el menú de la fila; abre el panel `#agregardirecto` con Id
+  negocio, Sociedad, Representante, Jaula, Categoría, Terminación (`Racionada`, no `Racionado`), Destino, Encierre
+  (Días), Razas, Peso prom. y Establecimiento.
+- Elegir la fecha: el campo `#fecha_I` pierde los separadores al tipear; se elige en el datepicker jQuery UI.
+- Los establecimientos cargan ~2 s tras elegir la sociedad; elegir antes borra la selección.

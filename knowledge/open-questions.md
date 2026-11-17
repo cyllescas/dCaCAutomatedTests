@@ -59,16 +59,6 @@ Estas preguntas deben resolverse con Producto, Desarrollo o una fuente funcional
 - `OQ-062`: Para Pesada Carguío se cargó la opción `#sociedad` y el legajo muestra "Sociedad Rural". ¿Es el nombre esperado de la opción? Evidencia: legajo #35686. **Pendiente: el usuario lo confirma con su líder.**
 - `OQ-067`: En `https://cliente-php8-upgrade.dcac.ar/` (2026-10-21) el alta de sociedad del formulario legacy no se completa: al aceptar `#aceptarSug`, la petición `GET /MODULOS/modulo_gruposociedades/index.php?saveSociedad=1&...` devolvió HTTP 500 y la sociedad nueva no quedó seleccionada (el select sigue en "+ Nueva Sociedad"). Falla `TC-INV-015`; en stage ese caso pasa. ¿Es un defecto del ambiente php8-upgrade o una diferencia esperada? Estado `UNKNOWN` hasta analizarlo con Desarrollo. Evidencia: `artifacts/cypress/screenshots/ofrecimientos-invernada-sociedad-establecimiento.cy.js/` (TC-INV-015 failed). Además, ese ambiente devolvió 502/503 intermitentes al abrir `/__dcac/`.
 - `OQ-068`: En php8-upgrade el login abre en un popup (`#btn_login` → `#modalLogin`) y el campo de email pierde caracteres al tipear (p. ej. `dcac-73820@…` quedó `dca820@…`/`dac-73820@…`) por el foco del popup. La automatización espera la apertura del popup, tipea con delay y verifica el valor; ¿el comportamiento del campo es esperado? Relacionada con `OQ-042`.
-- `OQ-070`: Faena legacy (2026-11-17): con todos los obligatorios completos salvo `Disponibilidad de
-  Carga`, el usuario ve el mensaje `Debe completar el campo Disponibilidad de Carga` en el front; en la
-  exploración con Playwright MCP (sin escribir la fecha) el envío se bloqueó (consola `Debe completar los
-  campos requeridos`) pero ese mensaje quedó con ancho 0. Probable diferencia de reproducción; la
-  automatización debe verificar el mensaje visible y, si falla, analizar antes de clasificar. UNKNOWN.
-- `OQ-071`: Faena legacy: el video de 4 s muestra, según el usuario, `Aún no se han cargado archivos,
-  compruebe que el formato sea el correcto.` (como en invernada, probablemente tras elegir sociedad). En la
-  exploración con Playwright MCP (sociedad y establecimiento elegidos, archivo por file chooser) no apareció
-  ese texto en el DOM en 120 s (contenedor `.videos_subidos` vacío; no existe `#seccion_archivos`). Puede ser
-  un `alert` nativo u otra diferencia de reproducción. Confirmar el oráculo al automatizar. UNKNOWN.
 
 ## Respondidas / superadas
 
@@ -87,4 +77,6 @@ Estas preguntas deben resolverse con Producto, Desarrollo o una fuente funcional
 | `OQ-064` | La diferencia de capitalización de la sociedad entre listado y legajo es aceptada (QA, 2026-10-13). |
 | `OQ-065` | El buscador no cambia la URL: esperado. No es exclusivo de tropaId, pero igual se valida el ingreso al legajo desde ahí (QA, 2026-10-13). |
 | `OQ-069` | Faena legacy: el peso promedio (`ng_peso`) es el único obligatorio de los tres campos de peso; el mínimo y el máximo solos no alcanzan (confirmado por el usuario 2026-11-17). |
+| `OQ-070` | Faena legacy: el mensaje `Debe completar el campo Disponibilidad de Carga` sí es visible (confirmado por el usuario y por Cypress 2026-11-17; la fecha se elige en el datepicker). |
+| `OQ-071` | Faena legacy: el video de 4 s es rechazado con `Aún no se han cargado archivos, compruebe que el formato sea el correcto.`; requiere sociedad elegida y primero crea un lote parcial (`#ng_id`). Planilla de pesada: queda un enlace `target=_blank`. |
 | `OQ-066` | La búsqueda y casi toda la página son lentas; en Ofrecimientos se ven primero las más nuevas (no en todos los estados). Hay un solo buscador y ya está cubierto (QA, 2026-10-13). |

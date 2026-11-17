@@ -49,7 +49,22 @@ class MainAdminPage{
         return cy.get(':nth-child(6) > .dropdown-toggle').contains('OFERTAS')
     }
 
+    // Faena offers list: the row has the id `fila_<lot>`; "Ver Legajo" sits in its hover menu and opens the panel below.
+    faenaOfferRow(lot){
+        return cy.get(`#fila_${lot}`, { timeout: 60000 })
+    }
+    faenaLegajoButton(lot){
+        return this.faenaOfferRow(lot).find('span.s-turque').contains(/^Ver Legajo$/)
+    }
+    faenaLegajoPanel(){
+        return cy.get('#agregardirecto', { timeout: 60000 })
+    }
+
     // Métodos
+    openFaenaLegajo(lot){
+        this.faenaLegajoButton(lot).click({ force: true })
+        return this.faenaLegajoPanel().should('be.visible')
+    }
     searchFaenaOffer(lot){
         return this.offersSearchField().clear().type(String(lot)).type('{enter}')
     }

@@ -6,6 +6,8 @@ import { loginWithSession, verifyLoginSuccessAsAdmin, verifyLoginSuccessAsClient
 
 const LOT_ENDPOINT = '**/MODULOS/directo/modulo_crearLote/index.php*'
 const OFFER_LOT_ALIAS = 'faenaOfferLot'
+// The Admin lives at the site root: /__dcac/ shows the client home even for the admin user.
+const ADMIN_SESSION_PATHS = { landingPath: '/', validatePath: '/' }
 
 // Restores the client session and walks Cotizar > Faena to the offer form.
 export function visitFaenaOfferForm(credentials) {
@@ -44,7 +46,7 @@ export function captureSubmittedOffer() {
 export function validateCreatedLotInAdmin(lotAlias, adminCredentials, expected) {
   cy.visit('/__dcac/?logout')
   cy.visit('/__dcac/')
-  loginWithSession(adminCredentials.username, adminCredentials.password, 'admin')
+  loginWithSession(adminCredentials.username, adminCredentials.password, 'admin', ADMIN_SESSION_PATHS)
   verifyLoginSuccessAsAdmin()
   cy.intercept(
     'GET',
@@ -58,15 +60,15 @@ export function validateCreatedLotInAdmin(lotAlias, adminCredentials, expected) 
   cy.get(`@${lotAlias}`).then((lot) => {
     MainAdminPage.searchFaenaOffer(lot)
     MainAdminPage.faenaOfferResult(lot)
-    MainAdminPage.viewLegajoButton().click()
+    MainAdminPage.openFaenaLegajo(lot)
     const checks = expected || ['Vaca gorda', 'Aberdeen Angus Negro', '425', 'Feedlot', 'Consumo']
-    cy.get('body').should('contain', String(lot))
-    checks.forEach((text) => cy.get('body').should('contain', text))
+    MainAdminPage.faenaLegajoPanel().should('contain', `#${lot}`)
+    checks.forEach((text) => MainAdminPage.faenaLegajoPanel().should('contain', text))
     cy.get('@submittedSociety').then((society) => {
-      cy.get('body').should('contain', society)
+      MainAdminPage.faenaLegajoPanel().should('contain', society)
     })
     cy.get('@submittedEstablishment').then((establishment) => {
-      cy.get('body').should('contain', establishment)
+      MainAdminPage.faenaLegajoPanel().should('contain', establishment)
     })
   })
 
@@ -85,7 +87,7 @@ function lotNumberFromResponse(body) {
 export function validateCreatedReactLotInAdmin(lotAlias, adminCredentials, expected = {}) {
   cy.visit('/__dcac/?logout')
   cy.visit('/__dcac/')
-  loginWithSession(adminCredentials.username, adminCredentials.password, 'admin')
+  loginWithSession(adminCredentials.username, adminCredentials.password, 'admin', ADMIN_SESSION_PATHS)
   verifyLoginSuccessAsAdmin()
   cy.intercept('GET', '**/MODULOS/listadosAdminNuevos/ajax/ofrecimientos_ajax.php**').as('loadReactFaenaOffers')
   MainAdminPage.faenaDropdownMenu().click()
@@ -95,10 +97,10 @@ export function validateCreatedReactLotInAdmin(lotAlias, adminCredentials, expec
   cy.get(`@${lotAlias}`).then((lot) => {
     MainAdminPage.searchFaenaOffer(lot)
     MainAdminPage.faenaOfferResult(lot)
-    MainAdminPage.viewLegajoButton().click()
-    cy.get('body').should('contain', String(lot))
+    MainAdminPage.openFaenaLegajo(lot)
+    MainAdminPage.faenaLegajoPanel().should('contain', String(lot))
     Object.entries(expected).forEach(([field, value]) => {
-      if (value !== undefined && value !== null) cy.get('body').should('contain', String(value))
+      if (value !== undefined && value !== null) MainAdminPage.faenaLegajoPanel().should('contain', String(value))
     })
   })
 
