@@ -3,6 +3,7 @@ import MainClientPage from "../../pages/MainClientPage";
 import MainAdminPage from "../../pages/MainAdminPage";
 import MainAgentPage from "../../pages/MainAgentPage";
 import MainCommercialPartnerPage from "../../pages/MainCommercialPartnerPage";
+import { applyAuthGateCookie } from "./auth_gate_helper";
 
 // The login fields of the php8-upgrade environment drop characters when typed at full speed
 // (observed: "dcac-73820@..." became "dca820@..."), so credentials are typed with a small delay.
@@ -23,6 +24,8 @@ export function loginWithSession(username, password, expectedRole = 'client', { 
     cy.session(
         ['dcac-authenticated-user', Cypress.config('baseUrl'), expectedRole, username],
         () => {
+            // cy.session starts with clean cookies: pass the gate of stage before opening the login.
+            applyAuthGateCookie()
             cy.visit('/__dcac/')
             login(username, password)
             cy.url({ timeout: 60000 }).should('include', '/__dcac/')

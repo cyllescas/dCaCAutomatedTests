@@ -57,6 +57,15 @@ module.exports = defineConfig({
         fileExists(filePath) {
           return fs.existsSync(path.resolve(config.projectRoot, filePath));
         },
+        // Temporary: while there is no QA user for the Google validation (auth.dcac.ar), reuses the gate cookie
+        // from the manual login saved by `node scripts/save-auth-state.cjs` (artifacts/, ignored by Git).
+        // Only the oauth2-proxy cookies of dcac.ar are returned; never the Google ones.
+        authGateCookies() {
+          const statePath = path.resolve(config.projectRoot, 'artifacts', 'auth-state.json');
+          if (!fs.existsSync(statePath)) return [];
+          const { cookies = [] } = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+          return cookies.filter((cookie) => /(^|\.)dcac\.ar$/.test(cookie.domain) && /^_oauth2_proxy/.test(cookie.name));
+        },
       });
       return config;
     },
