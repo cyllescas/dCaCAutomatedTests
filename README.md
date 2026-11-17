@@ -36,18 +36,25 @@ USER_COMMERCIAL_PARTNER=...      # Asociado comercial
 
 `cypress.config.js` también acepta los nombres `TEST_<ROL>_USERNAME` / `TEST_<ROL>_PASSWORD`.
 
-### Validación de Google en stage (exploración con Claude)
+### Validación de Google en stage (temporal, hasta que exista el usuario QA)
 
-`stage.dcac.ar` pasa por una validación de Google (`auth.dcac.ar`) que el navegador de exploración no
-puede resolver solo. Mientras no haya un acceso de QA, hacer el login manual una vez:
+`stage.dcac.ar` pasa por una validación de Google (`auth.dcac.ar`) que ni Cypress ni el navegador de
+exploración de Claude resuelven solos. Mientras no haya un acceso de QA, cada persona hace el login
+manual **una vez por semana** (la cookie vence):
 
 ```bash
-node scripts/save-auth-state.cjs   # abre un navegador: iniciá sesión con Google vos mismo
+node scripts/save-auth-state.cjs   # abre un navegador: iniciá sesión con tu cuenta de Google vos mismo
 ```
 
-Guarda las cookies en `artifacts/auth-state.json` (ignorado por Git; no compartir) y el lanzador del
-MCP (`scripts/run-playwright-mcp.cjs`) las usa si existe. Después reiniciar el MCP con `/mcp`. Si la
-sesión vence, repetir el comando.
+- **No hay que crear ningún archivo a mano**: el script crea `artifacts/auth-state.json` (ignorado por
+  Git; contiene una cookie de sesión, no lo compartas). Sólo hace falta tener el `.env` de arriba y
+  haber hecho `npx playwright install chromium`.
+- Tus credenciales de Google se escriben en esa ventana: no pasan por el script ni por Claude.
+- Cypress usa esa cookie solo (`cypress/support/helpers/auth_gate_helper.js`); sin el archivo no hace
+  nada. El MCP de exploración también la usa: después del login manual, reiniciarlo con `/mcp`.
+- Si los tests vuelven a caer en `accounts.google.com`, la cookie venció: repetir el comando.
+- Esta solución sólo funciona en tu máquina; la ejecución automática (pipeline) necesita el usuario QA o
+  un bypass de infraestructura.
 
 ### Videos de prueba (no versionados)
 

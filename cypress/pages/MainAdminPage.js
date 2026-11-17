@@ -36,9 +36,6 @@ class MainAdminPage{
     offersSearchField(){
         return cy.get('input[placeholder="Buscar en el listado..."]')
     }
-    viewLegajoButton(){
-        return cy.contains('Ver legajo', { timeout: 60000 }).should('be.visible')
-    }
     magDropdownMenu(){
         return cy.get(':nth-child(4) > .dropdown-toggle').contains('MAG')
     }
