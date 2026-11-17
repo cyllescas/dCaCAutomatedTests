@@ -129,6 +129,18 @@ class FaenaOfferPage {
     return cy.get('.alert_input_faltante')
   }
 
+  datepickerTitle() {
+    return cy.get('.ui-datepicker-title')
+  }
+
+  datepickerNext() {
+    return cy.get('.ui-datepicker-next')
+  }
+
+  datepickerDay(day) {
+    return cy.get('.ui-datepicker-calendar td[data-handler="selectDay"] a').contains(new RegExp(`^${day}$`))
+  }
+
   lotIdField() {
     return cy.get('#ng_id', { timeout: UPLOAD_RESULT_TIMEOUT })
   }
@@ -186,7 +198,11 @@ class FaenaOfferPage {
       return this.establishmentSelect().select(configured)
     }
 
-    return this.establishmentSelect().should('be.visible').find('option').then(($options) => {
+    // The establishments load after the society is chosen; selecting earlier is wiped when the list refreshes.
+    this.establishmentSelect().should('be.visible').should(($select) => {
+      expect($select.find('option').length, 'establishment options loaded').to.be.greaterThan(1)
+    })
+    return this.establishmentSelect().find('option').then(($options) => {
       const option = [...$options].find((item) => item.value && item.value !== 'crear')
       expect(option, 'available establishment').to.exist
       return this.establishmentSelect().select(option.value).should('have.value', option.value)
@@ -238,7 +254,7 @@ class FaenaOfferPage {
     if (offer.aptoChina) this.chooseRadio(offer.aptoChina)
     if (offer.breeds && !skip('breeds')) this.selectBreeds(offer.breeds)
     if (offer.weights && !skip('weight')) this.fillWeights(offer.weights)
-    if (!skip('loadDate')) this.loadDateField().clear().type(this.futureDate(10))
+    if (!skip('loadDate')) this.pickLoadDate(10)
     if (offer.comments) this.commentsField().type(offer.comments)
     if (offer.salePeriod) this.salePeriodField().clear().type(offer.salePeriod)
     if (offer.weighing) this.chooseRadio(offer.weighing)
@@ -247,10 +263,18 @@ class FaenaOfferPage {
     return cy.wrap(offer)
   }
 
-  futureDate(days) {
-    const date = new Date(Date.now() + days * 24 * 60 * 60 * 1000)
-    const pad = (value) => String(value).padStart(2, '0')
-    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
+  // Typing the date does not work (the field strips the separators and the form keeps rejecting it):
+  // pick the day in the date picker, going to the next month when the target day is not in the shown one.
+  pickLoadDate(daysAhead) {
+    const target = new Date(Date.now() + daysAhead * 24 * 60 * 60 * 1000)
+    this.loadDateField().click()
+    this.datepickerTitle().then(($title) => {
+      const shownMonth = $title.text().trim().toLowerCase()
+      const monthName = target.toLocaleDateString('es-AR', { month: 'long' }).toLowerCase()
+      if (!shownMonth.includes(monthName)) this.datepickerNext().click()
+    })
+    this.datepickerDay(target.getDate()).click()
+    return this.loadDateField().should('not.have.value', '')
   }
 
   // The "Agregar otra raza" button only adds a row after the previous breed is chosen.
@@ -278,6 +302,14 @@ class FaenaOfferPage {
       // Compare numbers, not the jQuery collection: a failing assertion would serialize the whole DOM.
       const messages = [...$body.find('.alert_input_faltante:visible')].map((node) => node.textContent.trim())
       expect(messages.length, `visible required messages: ${messages.join(' | ')}`).to.eq(count)
+    })
+  }
+
+  // Exactly these required fields are reported (the rest of the form was accepted).
+  assertOnlyRequiredMessages(labels) {
+    return cy.get('body').should(($body) => {
+      const shown = [...$body.find('.alert_input_faltante:visible')].map((node) => node.textContent.trim().replace('Debe completar el campo ', ''))
+      expect(shown.sort(), 'reported required fields').to.deep.eq([...labels].sort())
     })
   }
 

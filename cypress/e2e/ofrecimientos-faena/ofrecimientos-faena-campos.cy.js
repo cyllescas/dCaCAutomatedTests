@@ -50,6 +50,8 @@ describe('Campos, razas y validaciones del formulario de faena legacy @faena @of
       FaenaOfferPage.fillOffer(BASE_OFFER, { omit: [key] })
       FaenaOfferPage.submitOffer()
       FaenaOfferPage.assertRequiredMessage(label)
+      // Without a society the establishment is reported too; every other field was accepted (the date included).
+      FaenaOfferPage.assertOnlyRequiredMessages(key === 'society' ? [label, 'Establecimiento'] : [label])
       FaenaOfferPage.assertOfferFormStillShown()
     })
   })
