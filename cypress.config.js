@@ -1,4 +1,6 @@
 require('dotenv/config');
+const fs = require('fs');
+const path = require('path');
 const { defineConfig } = require('cypress');
 const { createFailureReports } = require('./cypress/reporters/test-report-generator');
 
@@ -40,8 +42,30 @@ module.exports = defineConfig({
     downloadsFolder: 'artifacts/cypress/downloads',
     retries: process.env.CI ? 2 : 0,
     setupNodeEvents(on, config) {
+      // Enables the grepTags filters (npm run test:smoke / test:regression / test:sanity) and spec pre-filtering.
+      require('@cypress/grep/src/plugin')(config);
       on('after:spec', (spec, results) => {
         if (results && results.tests) createFailureReports(results, config.projectRoot);
+      });
+      // Lets specs assert that a local, non-versioned fixture (e.g. videos) exists.
+      on('task', {
+        // Step trace printed to the console of `cypress run`, to locate where a run stalls.
+        trace(message) {
+          console.log(`[trace ${new Date().toISOString()}] ${message}`)
+          return null
+        },
+        fileExists(filePath) {
+          return fs.existsSync(path.resolve(config.projectRoot, filePath));
+        },
+        // Temporary: while there is no QA user for the Google validation (auth.dcac.ar), reuses the gate cookie
+        // from the manual login saved by `node scripts/save-auth-state.cjs` (artifacts/, ignored by Git).
+        // Only the oauth2-proxy cookies of dcac.ar are returned; never the Google ones.
+        authGateCookies() {
+          const statePath = path.resolve(config.projectRoot, 'artifacts', 'auth-state.json');
+          if (!fs.existsSync(statePath)) return [];
+          const { cookies = [] } = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+          return cookies.filter((cookie) => /(^|\.)dcac\.ar$/.test(cookie.domain) && /^_oauth2_proxy/.test(cookie.name));
+        },
       });
       return config;
     },

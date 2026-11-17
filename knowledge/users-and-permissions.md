@@ -52,3 +52,7 @@
 ### Clientes
 
 El procedimiento está referenciado en una página externa llamada `Clientes`, pero no fue incluido en la fuente exportada.
+
+## Observaciones de login por rol (2026-10-02)
+
+Las vistas posteriores al login observadas por rol en Stage están en `knowledge/login-dcac-exploration.md` (`MAP-LOGIN-001` a `MAP-LOGIN-004`). Son evidencia de interfaz y no confirman permisos 4/6 ni la diferencia Admin/CR (`OQ-002`, `OQ-004`, `OQ-038`).

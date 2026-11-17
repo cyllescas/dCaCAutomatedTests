@@ -1,0 +1,119 @@
+# Flujo e2e del ofrecimiento de invernada legacy: cliente ofrece, Admin verifica en el legajo.
+# No incluir credenciales, identificadores de tropas ni datos reales.
+
+feature:
+  id: ofrecimientos-invernada-legajo-admin
+  name: Ofrecimiento de invernada legacy verificado en el legajo Admin
+  description: >-
+    Validar en stage.dcac.ar que los datos cargados por un cliente en el
+    formulario legacy de ofrecimiento de Invernada/Cría se ven completos y
+    correctos en el legajo de la tropa que abre el Admin.
+  objective: >-
+    Como cliente, ofrecer una tropa y verificar del lado del vendedor que los
+    datos se guardaron bien (Pendientes y su informe, ya automatizado en
+    ofrecimientos-invernada). Como Admin, localizarla por su tropaId, abrir su
+    legajo y comparar cada dato cargado contra lo visible. El Admin tiene dos
+    caminos al legajo: (1) Home > INVERNADA > OFRECIMIENTOS, donde cada tropa
+    aparece en su div y se validan los datos del listado antes de pulsar "Ver
+    legajo", que abre el legajo arriba de la página; (2) el buscador, visible
+    desde la home y otras pantallas: ingresar el tropaId, ENTER y elegir la
+    opción INVERNADA, que muestra únicamente el legajo. Se cubren 4 flujos, no las 17
+    categorías (esas ya se validan en ofrecimientos-invernada): Terneros con los
+    campos mínimos, Terneras con todos los campos del formulario, Vacas con cría
+    con los campos mínimos y Vacas con cría con todos los campos del formulario.
+    Los dos flujos completos adjuntan el video válido de 29 s.
+  parent_feature: ofrecimientos-invernada
+  cases_policy: >-
+    El plan va en specs/ofrecimientos-invernada-legajo-admin.md (casos
+    TC-LEG-*), sin duplicar los TC-INV-* de specs/ofrecimientos-invernada.md. Los datos que el legajo muestre
+    distintos a los cargados se registran como preguntas abiertas, no como
+    defectos ni reglas de negocio.
+  sut:
+    base_url: https://stage.dcac.ar/
+  knowledge:
+    - knowledge/README.md
+    - knowledge/glossary.md
+    - knowledge/invernada.md
+    - knowledge/ofrecimientos-invernada-exploration.md
+    - knowledge/legajo-invernada-comprador-exploration.md
+    - knowledge/users-and-permissions.md
+    - knowledge/open-questions.md
+    - knowledge/test-data-catalog.md
+    - knowledge/testing-procedures.md
+  scope:
+    include:
+      - "Cliente: ofrecer una tropa con el formulario legacy (Cotizar > Invernada/Cría) y capturar el tropaId de forma pasiva"
+      - "Flujo 1, Terneros mínimo: sólo los campos obligatorios observados (cantidad, categoría, raza y plazo de venta), con sociedad y establecimiento existentes"
+      - "Flujo 2, Terneras completo: todos los campos que pide el formulario para la categoría (datos generales, segmentación, razas, Marca Líquida, Calidad, Estado Corporal, Tratamiento Nutricional, Destetados, Zona con Garrapata y Mio-Mio, Plan sanitario, Sanidad, Pesada Carguío, Desbaste, Distancia, Uniformidad, Descarte, Aclaración del cliente y fechas con la fecha actual) y video válido de 29 s adjunto"
+      - "Flujo 3, Vacas con cría mínimo: sólo los campos obligatorios observados"
+      - "Flujo 4, Vacas con cría completo: todos los campos del formulario para la categoría (incluidos datos de la cría, Dentición, Tipo de Rodeo y Aclaración del cliente) y video válido de 29 s adjunto"
+      - "Vendedor: tras enviar, verificar en Operaciones > Pendientes el ítem y el informe de la tropa con los datos cargados (la verificación ya implementada en ofrecimientos-invernada, que el flujo reutiliza)"
+      - "Admin, camino 1: home del Admin > INVERNADA > OFRECIMIENTOS; se listan las tropas de todos los clientes, cada una en su div. Validar en el div Sociedad vendedora, Cantidad, Categoría, Peso promedio y Establecimiento; pulsar Ver legajo, que abre el legajo de la tropa arriba de toda la página"
+      - "Admin, camino 2: buscador (visible en la home y otras pantallas), ingresar el tropaId (sólo números), ENTER y seleccionar la opción INVERNADA; la vista muestra exclusivamente el legajo"
+      - "Ambos caminos deben dar el mismo legajo para la misma tropa; el plan define en qué flujo se automatiza cada camino"
+      - "Legajo: comparar cada dato cargado con el visible, incluyendo cómo se ven los campos no cargados en los flujos mínimos (OQ-036)"
+      - "Legajo: la Aclaración del cliente y el video cargado, si el legajo los muestra"
+    exclude:
+      - Las 17 categorías y la validación de campos por categoría; se cubren en ofrecimientos-invernada
+      - Cambios o paridad con React; se cubren en ofrecimientos-invernada-react
+      - Edición de la tropa, cambio de estado, publicación, venta y asignación de comprador desde el Admin
+      - Acceso a APIs privadas, base de datos o código interno del SUT
+      - Inventar qué campos debe mostrar el legajo si el legajo no los muestra
+  preconditions:
+    - Usuario cliente o representante autenticado con TEST_CLIENT_USERNAME y TEST_CLIENT_PASSWORD.
+    - Usuario Admin autenticado con TEST_ADMIN_USERNAME y TEST_ADMIN_PASSWORD (cypress.config.js los toma de USER_ADMIN y PASSWORD).
+    - Sociedad vendedora y establecimiento de prueba disponibles para el cliente.
+    - "Autorizado crear ofrecimientos reales en stage (4 por corrida del flujo) sin borrarlos."
+    - "Video de prueba local no versionado: cypress/fixtures/video_ofrecimiento.mp4 (29 s, válido); ruta sobrescribible con INVERNADA_VIDEO_PATH."
+    - "Raza y Plazo de venta: usar la primera opción disponible. Fechas: la fecha actual."
+    - "Reutilizar fillOffer, los perfiles de invernada_offer_data.js y captureTropaId de ofrecimientos-invernada; agregar perfiles mínimo y completo en el archivo de datos, sin hardcodear datos en el spec."
+    - Explorar el Admin y el legajo con un envío real de cada nivel (mínimo y completo) antes de diseñar la automatización, y capturar selectores observados.
+  exploration:
+    coverage:
+      - positive
+      - data-integrity
+      - permission
+      - navigation
+  automation:
+    functional_area: invernada_offers_admin_legajo
+    suites: [regression]
+    tags: ["@invernada", "@ofrecimientos", "@legacy", "@admin", "@e2e"]
+    data_policy:
+      - Usar variables de entorno y datos dinámicos.
+      - No hardcodear credenciales, CUIT, nombres reales ni IDs compartidos.
+      - Mantener selectores en Page Objects y la intención funcional en specs.
+      - Cada flujo es un único it encadenado (cliente y luego Admin) con aislamiento completo.
+      - Guardar screenshots, videos y reportes bajo artifacts/.
+
+  discovery_contract:
+    required_outputs: [field_inventory, combination_matrix, selector_inventory, evidence_index]
+    required_case_types: [positive, data-integrity, permission, navigation]
+
+  automation_contract:
+    require_case_for_each_include: true
+    require_test_for_each_automatable_case: true
+    forbid_unobserved_selectors: true
+    allowed_unautomated_reasons: [manual_only, blocked_by_open_question, missing_authorized_data, missing_observed_selector, out_of_scope, deferred_until_app_validation]
+
+  scope_catalog:
+    - id: INV-LEG-001
+      description: Ofrecimiento del cliente con campos mínimos (Terneros y Vacas con cría)
+      risk: critical
+    - id: INV-LEG-002
+      description: Ofrecimiento del cliente con todos los campos (Terneras y Vacas con cría, ambas con video)
+      risk: critical
+    - id: INV-LEG-003
+      description: Navegación del Admin a la tropa (camino 1 por el listado de ofrecimientos y camino 2 por el buscador de tropaId)
+      risk: high
+    - id: INV-LEG-006
+      description: Datos de la tropa en el listado de ofrecimientos del Admin (Sociedad vendedora, Cantidad, Categoría, Peso promedio y Establecimiento)
+      risk: high
+    - id: INV-LEG-007
+      description: Verificación del vendedor en Pendientes de lo cargado en el mismo flujo
+      risk: high
+    - id: INV-LEG-004
+      description: Integridad de los datos cargados en el legajo Admin
+      risk: critical
+    - id: INV-LEG-005
+      description: Presentación en el legajo de los campos no cargados
+      risk: high

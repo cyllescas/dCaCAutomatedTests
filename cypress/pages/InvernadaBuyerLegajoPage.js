@@ -1,30 +1,12 @@
 class InvernadaBuyerLegajoPage {
-  visitAdmin() {
-    cy.visit('/__dcac/')
-  }
-
-  openInvernadaMenu() {
-    return cy.get('.dropdown-toggle').contains('INVERNADA').click()
-  }
+  // ── Selectores ──
 
   soldInvernadaLink() {
     return cy.get('a[href="?vendidas_invernada&secc=i&tit=2"]').filter(':visible')
   }
 
-  openSoldInvernada() {
-    this.soldInvernadaLink().click()
-    cy.contains('Tropas Vendidas', { timeout: 60000 }).should('be.visible')
-    cy.contains('Tropas:', { timeout: 60000 }).should('be.visible')
-    cy.contains('Ver Legajo', { timeout: 60000 }).should('be.visible')
-  }
-
   legajoLinks() {
     return cy.get('a[href="#legajo"]').filter(':visible')
-  }
-
-  openFirstLegajo() {
-    this.legajoLinks().first().click()
-    cy.contains('Información Comprador', { timeout: 60000 }).should('be.visible')
   }
 
   buyerSection() {
@@ -35,13 +17,39 @@ class InvernadaBuyerLegajoPage {
     return cy.contains('Información Comprador', { timeout: 60000 }).filter(':visible')
   }
 
+  buyerUserPicker() {
+    return cy.get('#sociedades_select_chosen')
+  }
+
+  buyerInfoLink() {
+    return cy.get('a[href*="?u&cliente="]').filter(':visible').first()
+  }
+
+  // ── Métodos ──
+
+  visitAdmin() {
+    cy.visit('/__dcac/')
+  }
+
+  openInvernadaMenu() {
+    return cy.get('.dropdown-toggle').contains('INVERNADA').click()
+  }
+
+  openSoldInvernada() {
+    this.soldInvernadaLink().click()
+    cy.contains('Tropas Vendidas', { timeout: 60000 }).should('be.visible')
+    cy.contains('Tropas:', { timeout: 60000 }).should('be.visible')
+    cy.contains('Ver Legajo', { timeout: 60000 }).should('be.visible')
+  }
+
+  openFirstLegajo() {
+    this.legajoLinks().first().click()
+    cy.contains('Información Comprador', { timeout: 60000 }).should('be.visible')
+  }
+
   editBuyer() {
     cy.contains('Información Comprador').parent().contains('a', 'Editar').click()
     return this.buyerUserPicker().should('be.visible')
-  }
-
-  buyerUserPicker() {
-    return cy.get('#sociedades_select_chosen')
   }
 
   openBuyerUserPicker() {
@@ -82,10 +90,6 @@ class InvernadaBuyerLegajoPage {
     cy.get('[role="dialog"]').should('contain.text', '¿Eliminar los cambios realizados?')
     cy.get('[role="dialog"]').contains('button', 'Aceptar').click()
     this.buyerSectionTitle().should('be.visible')
-  }
-
-  buyerInfoLink() {
-    return cy.get('a[href*="?u&cliente="]').filter(':visible').first()
   }
 
   openBuyerInfo() {

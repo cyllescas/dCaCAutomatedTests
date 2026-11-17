@@ -8,3 +8,6 @@ test-results/
 .playwright-mcp/
 cypress/screenshots/
 cypress/videos/
+
+# Videos de prueba locales (pesados; no se versionan)
+cypress/fixtures/*.mp4

@@ -34,3 +34,24 @@ Objetivo: preparar una tropa para verificar que el cliente vea el aviso de compr
 ### Advertencia
 
 Eliminar `disabled` sólo modifica el DOM del navegador. Este procedimiento depende de que el backend acepte una transición que la interfaz bloquea; por eso debe considerarse un workaround de preparación de datos, no un flujo válido del usuario. Antes de automatizarlo, conviene disponer de una API, fixture o mecanismo formal de setup.
+
+## Datos que se acumulan en Stage por las pruebas de invernada
+
+`TST-INV-002`
+
+- Cada envío de un ofrecimiento de invernada legacy crea una tropa real en
+  Stage (Pendientes de publicación); la autorización vigente del usuario no
+  exige borrarlas. La frecuencia de ejecución queda por validar con el líder.
+- Las altas de sociedad y establecimiento de las pruebas dejan registros con
+  prefijo `QA-`; en el select de sociedades ya existen muchas "Qa Sociedad
+  Invernada <timestamp>" de corridas anteriores y una opción `undefined`.
+- La exploración del 2026-10-08 creó seis tropas (lotes observados #35415 a
+  #35418) y la sociedad y el establecimiento `QA-...-20261008-1`.
+- Los videos de prueba no se versionan (`cypress/fixtures/*.mp4`); ver
+  `README.md` para las variables `INVERNADA_VIDEO_PATH` e
+  `INVERNADA_VIDEO_SHORT_PATH`.
+- Re-exploración 2026-10-09: tropas #35568 y #35578, más lotes parciales huérfanos (por ejemplo #35561 a #35567) creados por cada click en "Adjuntar Filmación". Hay también una tropa previa "-5 Terneros" (#35416) de la exploración del 2026-10-08.
+- Para observar `tropaId` en pruebas: el request `POST .../modulo_crearLote/index.php` sin `?parcial=true` devuelve el id plano; usar sólo como observación pasiva (ver `specs/ofrecimientos-invernada.md`, TC-INV-033).
+- Generación de specs (2026-10-09): el generator hizo 7 envíos reales adicionales (por ejemplo #35609) y unos 7 lotes parciales huérfanos por los casos de video.
+- Decisión del usuario (2026-10-09): para obtener el `tropaId` se acepta `cy.intercept` pasivo sobre `modulo_crearLote/index.php` (no hay otra forma); aislado en `cypress/support/helpers/invernada_trace_helper.js`.
+- Para filtrar los envíos de invernada por categoría: `CYPRESS_INVERNADA_SUBMIT_CATEGORIES="Terneros,Vacas preñadas"`; vacío corre las 17 (crea 17 tropas reales).

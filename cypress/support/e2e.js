@@ -15,6 +15,16 @@
 
 // Import commands.js using ES2015 syntax:
 import './commands'
+import registerCypressGrep from '@cypress/grep/src/support'
+import { applyAuthGateCookie } from './helpers/auth_gate_helper'
+
+// Filters tests by tag (--env grepTags=@smoke); required by the npm test:* scripts.
+registerCypressGrep()
+
+// Temporary: pass the Google validation of stage with the cookie of the manual login (see auth_gate_helper.js).
+beforeEach(() => {
+  applyAuthGateCookie()
+})
 
 
 Cypress.on('uncaught:exception', (err) => {

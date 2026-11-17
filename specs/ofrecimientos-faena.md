@@ -314,3 +314,136 @@ La alta positiva de sociedad no quedó confirmada en Stage; por eso TC-FAE-009
 y TC-FAE-010 son candidatos automatizables y no specs ejecutables todavía. No
 se generaron specs ni se ejecutaron pruebas Cypress porque el plan no tiene
 aprobación humana.
+
+---
+
+# Ampliación 2026-11-17 — Cobertura del formulario legacy
+
+## Estado
+
+**Pendiente de aprobación humana** (responder `aprobado`). Reemplaza la estrategia de las 24
+combinaciones terminación × destino × flete (ver TC-FAE-025). Origen: `config/ofrecimientos-faena.yaml` y
+`config/ofrecimientos-faena-cases.md`; exploración del 2026-11-17 en `stage.dcac.ar` con cliente,
+documentada en `knowledge/ofrecimientos-faena-exploration.md`. No se publicó ninguna tropa durante la
+exploración. Los casos no confirmados por la UI quedan como `UNKNOWN` (OQ-070, OQ-071).
+
+## Observaciones que cambian el diseño
+
+- Las 29 categorías muestran exactamente los mismos 27 controles: la categoría **no** agrega ni quita campos.
+- El único campo condicional por selección es `Días de encierre (aprox)` (Racionado y Feedlot); el otro
+  elemento dinámico son las razas repetibles (máximo 3).
+- Tipo de jaula, destino, apto China, pesada y flete no agregan campos.
+- Obligatorios observados: Sociedad, Establecimiento, Tipo de Jaula, Categoría, Terminación, Destino, Raza,
+  Peso y Disponibilidad de Carga. No lo son: Días de encierre, apto China, pesada, flete, plazo, desbaste.
+- Peso: sólo `ng_peso` (promedio) satisface el obligatorio (confirmado por el usuario, OQ-069 resuelta).
+
+## Casos de prueba nuevos
+
+### TC-FAE-012 — Las 29 categorías se pueden seleccionar y no cambian los campos
+- Tipo/prioridad: positive / High. Sin publicar.
+- Pasos: abrir el formulario; para cada una de las 29 categorías seleccionarla y comparar los controles visibles.
+- Esperado: cada categoría queda seleccionada; el conjunto de controles visibles es idéntico para todas.
+- Automatizable: sí. `select[name='ng_categoria']`; lista de nombres/valores en el knowledge.
+
+### TC-FAE-013 — Opciones de Raza
+- Tipo/prioridad: positive / Medium. Esperado: 24 razas (más `Seleccionar`), con `Bubalinos` incluida.
+- Automatizable: sí. `select[name='ng_raza']`.
+
+### TC-FAE-014 — Días de encierre según terminación
+- Tipo/prioridad: positive / High.
+- Esperado: A campo no muestra `ng_dias_encierre`; Racionado y Feedlot sí; volver a A campo lo oculta;
+  no es obligatorio (enviar sin él no genera mensaje para ese campo).
+- Automatizable: sí. `label[for='a_campo'|'racionado'|'feedlot']`, `input[name='ng_dias_encierre']`.
+
+### TC-FAE-015 — Razas repetibles, máximo 3
+- Tipo/prioridad: boundary / High.
+- Pasos: elegir una raza; `+ Agregar otra raza` (`.agr_raza`) dos veces eligiendo raza en cada fila
+  (`ng_raza`, `ng_raza2`, `ng_raza3`); hacer clic una cuarta vez.
+- Esperado: hay 3 selects; el cuarto clic no agrega un cuarto select. Sin mensaje (observado).
+- Automatizable: sí. Sin raza previa elegida el botón no agrega fila (observado, 4 clics → 1 select).
+
+### TC-FAE-016 — Formulario vacío lista todos los obligatorios
+- Tipo/prioridad: validation / High.
+- Esperado: mensajes `Debe completar el campo` para Sociedad, Establecimiento, Tipo de Jaula, Categoría,
+  Terminación, Destino, Raza, Peso y Disponibilidad de Carga; y ninguno para los campos opcionales.
+- Automatizable: sí. `.alert_input_faltante`. Reemplaza la aserción genérica por regex del test actual.
+
+### TC-FAE-017 — Cada obligatorio por separado
+- Tipo/prioridad: validation / High. Data-driven: completar todo salvo un campo y enviar.
+- Esperado: aparece el mensaje de ese campo y no se navega (la tropa no se crea).
+- Automatizable: sí para los 9 obligatorios (Peso = sin `ng_peso`). Para **Disponibilidad de Carga** el
+  usuario ve el mensaje `Debe completar el campo Disponibilidad de Carga`; la exploración con Playwright MCP
+  no lo vio visible (OQ-070), así que si el test falla se analiza antes de clasificar. Se verifica además que
+  no se navega ni se crea la tropa.
+
+### TC-FAE-018 — Peso: sólo el promedio es obligatorio
+- Tipo/prioridad: validation / High.
+- Esperado: con sólo `ng_peso_min`, sólo `ng_peso_max` o ambos (resto completo) aparece `Debe completar el
+  campo Peso`; con `ng_peso` el mensaje desaparece. La app no valida relación entre los tres campos.
+- Automatizable: sí (OQ-069 resuelta). No se agregan casos de rango.
+
+### TC-FAE-019 — Publicación por categoría (Ofrecer tropa)
+- Tipo/prioridad: positive + data-integrity / Critical. Crea tropas reales (6).
+- Categorías: Terneros, Terneros y Terneras, Vaca gorda, Toro gordo, Toros y Vacas, Bubalinos.
+- Cada una rota las opciones para cubrir todos los valores sin producto cartesiano:
+
+| # | Categoría | Jaula | Terminación (días) | Destino | Apto China | Pesada | Flete |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| 1 | Terneros | Simple | A campo | Consumo | No | Sin encierre | A retirar |
+| 2 | Terneros y Terneras | Doble | Racionado (30) | Exportación Hilton | Sí | Con encierre | Puesto en planta |
+| 3 | Vaca gorda | Simple | Feedlot (45) | Exportación UE | No | Con encierre | A retirar |
+| 4 | Toro gordo | Doble | A campo | Cuota 481 | Sí | Sin encierre | Puesto en planta |
+| 5 | Toros y Vacas | Simple | Racionado (30) | Consumo | Sí | Con encierre | A retirar |
+| 6 | Bubalinos | Doble | Feedlot (45) | Exportación Hilton | No | Sin encierre | Puesto en planta |
+
+- Esperado: la respuesta de `modulo_crearLote` es un número de lote, aparece `Su tropa ha sido creada
+  correctamente` y la tropa figura en `Pendientes de publicación` con categoría, peso y datos enviados.
+  Verificación en admin (legajo): en 2 de las 6 (p. ej. #2 y #6) para no alargar la corrida.
+- Automatizable: sí (flujo ya existente en `faena_offer_helper.js`, parametrizado).
+
+### TC-FAE-020 — Publicaciones adicionales con otras categorías
+- Tipo/prioridad: positive / High. Crea tropas reales (3), categorías distintas de TC-FAE-019:
+  - **A. Novillos, 3 razas**, con aclaraciones, plazo y desbaste completos, y los tres pesos.
+  - **B. Varias, mínimo indispensable**: sólo obligatorios, sólo `ng_peso`, sin opcionales.
+  - **C. MEJ y Vaquillonas**, con sociedad y establecimiento nuevos creados en la corrida (sujeto a OQ-067/OQ-042).
+- Esperado: igual que TC-FAE-019. Automatizable: A y B sí; C condicionado por la creación de sociedad.
+
+### TC-FAE-021 — Planilla de pesada
+- Tipo/prioridad: positive / Medium. Sin publicar.
+- Pasos: con sociedad y establecimiento elegidos, adjuntar una imagen en `#selPlanilla` (oculto; botón
+  `.btn_agregar_planilla`).
+- Esperado: aparece el enlace `a[target='_blank'][href^='/documentos/?ver=1&arch=']` con su imagen; se verifica
+  `target` y `href` (no se abre la pestaña nueva en Cypress). Adjuntar sube un archivo al servidor.
+- Automatizable: sí para imagen; PDF y otros formatos no observados.
+
+### TC-FAE-022 — Video
+- Tipo/prioridad: validation / Medium. Sin publicar; mismo criterio que invernada (sociedad y establecimiento
+  elegidos antes de adjuntar).
+- Esperado: el video de 4 s muestra `Aún no se han cargado archivos, compruebe que el formato sea el
+  correcto.` (observación del usuario); válido (29 s) y sin video: se confirman al automatizar.
+- Automatizable: parcial. El oráculo (`.videos_subidos`, otro contenedor o `alert` nativo) no se pudo observar
+  con Playwright MCP (OQ-071); el generator debe fijarlo en la primera ejecución. Si no se confirma, UNKNOWN.
+
+### TC-FAE-025 — Reducción de las 24 combinaciones
+- Las 24 publicaciones del producto cartesiano se reemplazan por TC-FAE-019/020 (9 tropas en vez de 24+).
+  Cada valor de terminación, destino, apto China, jaula, pesada y flete se publica al menos una vez.
+  Decisión del usuario: pendiente de confirmar al aprobar este plan.
+
+## Automation Handoff
+
+- Specs to create under `cypress/e2e/ofrecimientos-faena/`: `ofrecimientos-faena-categorias.cy.js`
+  (TC-FAE-012/013), `ofrecimientos-faena-campos.cy.js` (TC-FAE-014/015/016/017) and
+  `ofrecimientos-faena-envio.cy.js` (TC-FAE-019/020). Keep the existing spec for access, empty altas,
+  society/establishment creation, pending and admin legajo; remove the 24-combination loop.
+- POM `FaenaOfferPage.js`: add accessors `categoryOptions()`, `breedOptions()`, `daysOfConfinement()`
+  (`input[name='ng_dias_encierre']`), `addBreedButton()` (`.agr_raza`), `breedSelect(n)`
+  (`ng_raza`, `ng_raza2`, `ng_raza3`), `requiredFieldMessages()` (`.alert_input_faltante`),
+  radios by `label[for=...]`, `averageWeight()`, `loadDate()` (`#fecha_I`), `commentsField()`,
+  `salePeriodField()`, `shrinkageField()`, `weighingSheetButton()` (`.btn_agregar_planilla`), `weighingSheetLink()` (`a[target='_blank'][href^='/documentos/?ver=1&arch=']`), `videoButton()` (`input[type=button].btn_subir_video`), `videoResult()` (`.videos_subidos`). Keep all selectors in the POM; specs call POM methods only.
+- Helpers: extend `fillValidOffer(options)` with `category`, `jaula`, `terminacion`, `daysOfConfinement`,
+  `destino`, `aptoChina`, `pesada`, `flete`, `breeds[]`, `weights`; reuse `captureSubmittedOffer`,
+  `validateCreatedLotInAdmin` (admin check only for cases #2 and #6) and the pending-publication check.
+- Data: dynamic society/establishment from existing options (`FAENA_SOCIETY_VALUE`/`FAENA_ESTABLISHMENT_VALUE`);
+  load date generated at runtime; no hardcoded lot numbers or credentials.
+- Tags: `@faena @ofrecimientos @regression`; real-tropa specs must not carry `@smoke`.
+- Blocked/UNKNOWN: TC-FAE-017 date message (OQ-070), TC-FAE-022 video oracle (OQ-071), TC-FAE-020-C (OQ-067).

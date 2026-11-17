@@ -3,9 +3,18 @@ feature:
   name: Ofrecimientos de faena
   description: Como cliente, validar el ofrecimiento (cotizar) de un lote de faena y verificar que aparezca en Mis Operaciones > pendientes de publicación. Como admin, validar la aparición del lote en Faena > Ofrecimientos, con los datos correspondientes..
   objective: >-
-    Como Cliente, cubrir el formulario de ofrecimiento de faena con combinaciones válidas,
-    inválidas y de límite; crear casos con sociedades y establecimientos existentes y crear nuevas sociedades y establecimientos. Verificar que aparezca en Mis Operaciones > pendientes de publicación
+    Como Cliente, cubrir el formulario legacy de ofrecimiento de faena (Cotizar > Faena):
+    campos, opciones de cada select, campos condicionales (Días de encierre con Racionado y
+    Feedlot, razas repetibles), validaciones y publicación de la tropa (Ofrecer tropa) con
+    sociedades y establecimientos existentes o nuevos. Verificar que la tropa aparezca en
+    Mis Operaciones > pendientes de publicación.
     Como admin, comprobar que la tropa creada conserva los datos enviados, dentro de Faena > Ofrecimientos.
+  cases_file: config/ofrecimientos-faena-cases.md
+  cases_policy: >-
+    Extender specs/ofrecimientos-faena.md con los casos de cases_file sin duplicar los
+    TC-FAE-* existentes. Las descripciones del formulario son observaciones del usuario sin
+    fuente documentada: registrarlas en knowledge/ como observaciones, no como reglas de
+    negocio. La exploración confirma o corrige cada una antes de automatizar.
   sut:
     base_url: https://stage.dcac.ar/
   knowledge:
@@ -25,12 +34,17 @@ feature:
       - Coincidencia entre formulario y legajo/listado de la tropa
       - Creación y selección de sociedad vendedora
       - Creación y selección de establecimiento
-      - Casos con distintas terminaciones Feedlot, Racionado y A campo
-      - Casos con distintos destinos Consumo, Exportación Hilton, Exportación UE y Cuota
-      - Casos con distintos fletes A retirar y Puesto en planta
-      - Campos obligatorios, combinaciones inválidas y valores límite
+      - "Campos del formulario: sociedad, establecimiento, tipo de jaula (Simple/Doble), categoría, terminación, destino, apto China, raza, peso, planilla de pesada, disponibilidad de carga, video, aclaraciones, plazo de venta, pesada, desbaste y flete"
+      - "Las 29 categorías: se pueden seleccionar todas y el formulario muestra siempre los mismos campos (no se ocultan ni se agregan campos según la categoría)"
+      - "Terminación A campo, Racionado y Feedlot; Racionado y Feedlot agregan Días de encierre (aprox) (placeholder Días)"
+      - "Destino Consumo, Exportación Hilton, Exportación UE y Cuota 481; Apto China Sí/No; Pesada Con/Sin encierre; Flete A retirar/Puesto en planta (jaula, pesada y flete no agregan campos)"
+      - "Razas: misma lista que invernada, botón Agregar otra raza (repetibles)"
+      - "Peso de la tropa (kg netos): animal más liviano, más pesado y promedio"
+      - "Planilla de pesada opcional (imágenes y PDF) y carga de video"
+      - "Publicación (Ofrecer tropa) sólo para Terneros, Terneros y Terneras, Vaca gorda, Toro gordo, Toros y vacas y Bubalinos; el resto de las categorías sólo valida selección y campos visibles"
+      - "Publicaciones adicionales con combinaciones no redundantes de terminación/destino/apto China/pesada/flete/jaula: cada valor de cada opción se publica al menos una vez, sin producto cartesiano"
+      - Campos obligatorios por campo y valores límite sólo con mensajes observados
       - Descubrimiento de la solicitud API que persiste el ofrecimiento
-      - Campos correlacionados funcionan correctamente.
     exclude:
       - Publicación, venta, carga, faenado y liquidación de la tropa
       - Compra Inmediata de faena

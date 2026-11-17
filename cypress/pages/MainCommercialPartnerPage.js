@@ -1,9 +1,21 @@
 class MainCommercialPartnerPage{
     mainBody(){
-        return cy.get('#contenedor_left', {timeout: 6000})
+        return cy.get('#contenedor_left', {timeout: 60000})
     }
     mainBrowserBar(){
-        return cy.get('#li_busca > [name="busca"]', {timeout: 6000});
+        return cy.get('#li_busca > [name="busca"]', {timeout: 60000});
+    }
+    navbar(){
+        return cy.get('nav#navbar', {timeout: 60000})
+    }
+    logoutLink(){
+        return cy.get('a.logout_azul', {timeout: 60000})
+    }
+    societiesSection(){
+        return cy.get('#app-gestion_sociedades', {timeout: 60000})
+    }
+    liveBoard(){
+        return cy.get('table#liveBoard')
     }
     mainCrearUsuarioButton(){
         return cy.get('.link_crear_usuario')

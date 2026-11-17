@@ -1,4 +1,13 @@
+import { MESSAGES } from '../support/data/faena_offer_data'
+
+const VISIBLE_CONTROLS = 'input:visible, select:visible, textarea:visible, label[for]:visible'
+const VIDEO_RESULT_TIMEOUT = 90000
+const UPLOAD_RESULT_TIMEOUT = 60000
+const REACT_ORIGIN = 'https://react-stage.dcac.ar'
+
 class FaenaOfferPage {
+  // ── Selectores ──
+
   societySelect() {
     return cy.get('#sociedad_select')
   }
@@ -7,46 +16,8 @@ class FaenaOfferPage {
     return cy.get("select[name='ng_establecimiento']")
   }
 
-  selectedSocietyName() {
-    return this.societySelect().find('option:selected').invoke('text').then((text) => text.trim())
-  }
-
-  selectedEstablishmentName() {
-    return this.establishmentSelect().find('option:selected').invoke('text').then((text) => text.trim())
-  }
-
   establishmentMenu() {
     return cy.get('#estab')
-  }
-
-  selectFirstAvailableSociety() {
-    const configured = Cypress.env('FAENA_SOCIETY_VALUE')
-    if (configured) {
-      return this.societySelect().select(configured)
-    }
-
-    return this.societySelect().find('option').then(($options) => {
-      const option = [...$options].find((item) => item.value && item.value !== 'crear')
-      expect(option, 'available society').to.exist
-      this.societySelect().select(option.value)
-    })
-  }
-
-  selectFirstAvailableEstablishment() {
-    const configured = Cypress.env('FAENA_ESTABLISHMENT_VALUE')
-    if (configured) {
-      return this.establishmentSelect().select(configured)
-    }
-
-    return this.establishmentSelect().should('be.visible').find('option').then(($options) => {
-      const option = [...$options].find((item) => item.value && item.value !== 'crear')
-      expect(option, 'available establishment').to.exist
-      return this.establishmentSelect().select(option.value).should('have.value', option.value)
-    })
-  }
-
-  openNewSociety() {
-    return this.societySelect().select('crear').then(() => this.societyModal().should('be.visible'))
   }
 
   newSocietyNameField() {
@@ -55,10 +26,6 @@ class FaenaOfferPage {
 
   newSocietyCuitField() {
     return cy.get('#cuit')
-  }
-
-  openNewEstablishment() {
-    return this.establishmentMenu().select('crear').then(() => this.establishmentModal().should('be.visible'))
   }
 
   newEstablishmentNameField() {
@@ -93,27 +60,339 @@ class FaenaOfferPage {
     return cy.get("select[name='ng_raza']")
   }
 
+  confirmationMessage() {
+    return cy.contains('Su tropa ha sido creada correctamente')
+  }
+
+  operationsLink() {
+    return cy.get('a').contains(/^operaciones$/)
+  }
+
+  offerTitle() {
+    return cy.contains('Publicar una tropa de Gordo')
+  }
+
+  submitButton() {
+    return cy.get('div._boot.btn_agregar_listado.env').contains('Ofrecer tropa')
+  }
+
+  radioLabel(id) {
+    return cy.get(`label[for='${id}']`)
+  }
+
+  confinementDaysField() {
+    return cy.get("input[name='ng_dias_encierre']")
+  }
+
+  addBreedButton() {
+    return cy.get('.agr_raza')
+  }
+
+  breedSelectAt(index) {
+    // ng_raza, ng_raza2, ng_raza3
+    return cy.get(`select[name='${index === 0 ? 'ng_raza' : `ng_raza${index + 1}`}']`)
+  }
+
+  visibleBreedSelects() {
+    return cy.get("select[name^='ng_raza']:visible")
+  }
+
+  minWeightField() {
+    return cy.get("input[name='ng_peso_min']")
+  }
+
+  maxWeightField() {
+    return cy.get("input[name='ng_peso_max']")
+  }
+
+  averageWeightField() {
+    return cy.get("input[name='ng_peso']")
+  }
+
+  loadDateField() {
+    return cy.get('#fecha_I')
+  }
+
+  commentsField() {
+    return cy.get("textarea[name='ng_aclaracion']")
+  }
+
+  salePeriodField() {
+    return cy.get("input[name='ng_condiciones_plazo_cotizacion']")
+  }
+
+  shrinkageField() {
+    return cy.get("input[name='ng_condiciones_desbaste']")
+  }
+
+  requiredMessages() {
+    return cy.get('.alert_input_faltante')
+  }
+
+  datepickerTitle() {
+    return cy.get('.ui-datepicker-title')
+  }
+
+  datepickerNext() {
+    return cy.get('.ui-datepicker-next')
+  }
+
+  datepickerDay(day) {
+    return cy.get('.ui-datepicker-calendar td[data-handler="selectDay"] a').contains(new RegExp(`^${day}$`))
+  }
+
+  lotIdField() {
+    return cy.get('#ng_id', { timeout: UPLOAD_RESULT_TIMEOUT })
+  }
+
+  videoButton() {
+    return cy.get('input[type=button].btn_subir_video')
+  }
+
+  videoFileInput() {
+    return cy.get('#fileuploadVideo')
+  }
+
+  videoResult() {
+    return cy.get('.videos_subidos')
+  }
+
+  weighingSheetButton() {
+    return cy.get('.btn_agregar_planilla')
+  }
+
+  weighingSheetInput() {
+    return cy.get('#selPlanilla')
+  }
+
+  weighingSheetLink(timeout) {
+    return cy.get("a[target='_blank'][href^='/documentos/?ver=1&arch=']", { timeout })
+  }
+
+  // ── Métodos ──
+
+  selectedSocietyName() {
+    return this.societySelect().find('option:selected').invoke('text').then((text) => text.trim())
+  }
+
+  selectedEstablishmentName() {
+    return this.establishmentSelect().find('option:selected').invoke('text').then((text) => text.trim())
+  }
+
+  selectFirstAvailableSociety() {
+    const configured = Cypress.env('FAENA_SOCIETY_VALUE')
+    if (configured) {
+      return this.societySelect().select(configured)
+    }
+
+    return this.societySelect().find('option').then(($options) => {
+      const option = [...$options].find((item) => item.value && item.value !== 'crear')
+      expect(option, 'available society').to.exist
+      this.societySelect().select(option.value)
+    })
+  }
+
+  selectFirstAvailableEstablishment() {
+    const configured = Cypress.env('FAENA_ESTABLISHMENT_VALUE')
+    if (configured) {
+      return this.establishmentSelect().select(configured)
+    }
+
+    // The establishments load after the society is chosen; selecting earlier is wiped when the list refreshes.
+    this.establishmentSelect().should('be.visible').should(($select) => {
+      expect($select.find('option').length, 'establishment options loaded').to.be.greaterThan(1)
+    })
+    return this.establishmentSelect().find('option').then(($options) => {
+      const option = [...$options].find((item) => item.value && item.value !== 'crear')
+      expect(option, 'available establishment').to.exist
+      return this.establishmentSelect().select(option.value).should('have.value', option.value)
+    })
+  }
+
+  openNewSociety() {
+    return this.societySelect().select('crear').then(() => this.societyModal().should('be.visible'))
+  }
+
+  openNewEstablishment() {
+    return this.establishmentMenu().select('crear').then(() => this.establishmentModal().should('be.visible'))
+  }
+
   chooseRadio(id) {
     return cy.get(`label[for='${id}']`).click()
   }
 
+  // Defaults of the original single case (Vaca gorda / Feedlot / Consumo); kept for the pending/admin flows.
   fillValidOffer(options = {}) {
-    this.selectFirstAvailableSociety()
-    this.selectFirstAvailableEstablishment()
-    this.chooseRadio('simple')
-    this.categorySelect().select('Vaca gorda')
-    this.chooseRadio(options.termination || 'feedlot')
-    this.chooseRadio(options.destination || 'consumo')
-    this.chooseRadio('apto_china_no')
-    this.breedSelect().select('Aberdeen Angus Negro')
-    cy.get("input[name='ng_peso_min']").type('350')
-    cy.get("input[name='ng_peso_max']").type('500')
-    cy.get("input[name='ng_peso']").type('425')
-    cy.get('#fecha_I').type('2026-09-10')
-    cy.get("input[name='ng_condiciones_plazo_cotizacion']").type('30')
-    this.chooseRadio('sin_encierre')
-    cy.get("input[name='ng_condiciones_desbaste']").type('0')
-    this.chooseRadio(options.freight || 'a_retirar')
+    return this.fillOffer({
+      cage: 'simple',
+      category: 'Vaca gorda',
+      termination: options.termination || 'feedlot',
+      destination: options.destination || 'consumo',
+      aptoChina: 'apto_china_no',
+      breeds: ['Aberdeen Angus Negro'],
+      weights: { min: '350', max: '500', avg: '425' },
+      weighing: 'sin_encierre',
+      freight: options.freight || 'a_retirar',
+      salePeriod: '30',
+      shrinkage: '0',
+    })
+  }
+
+  // Fills the form from an offer profile (see faena_offer_data.js). `omit` lists required
+  // keys to leave empty (TC-FAE-017). Optional keys left null/undefined are not touched.
+  fillOffer(offer, { omit = [] } = {}) {
+    const skip = (key) => omit.includes(key)
+    if (!skip('society')) this.selectFirstAvailableSociety()
+    if (!skip('society') && !skip('establishment')) this.selectFirstAvailableEstablishment()
+    if (offer.cage && !skip('cage')) this.chooseRadio(offer.cage)
+    if (offer.category && !skip('category')) this.categorySelect().select(offer.category)
+    if (offer.termination && !skip('termination')) {
+      this.chooseRadio(offer.termination)
+      if (offer.daysOfConfinement) this.confinementDaysField().clear().type(offer.daysOfConfinement)
+    }
+    if (offer.destination && !skip('destination')) this.chooseRadio(offer.destination)
+    if (offer.aptoChina) this.chooseRadio(offer.aptoChina)
+    if (offer.breeds && !skip('breeds')) this.selectBreeds(offer.breeds)
+    if (offer.weights && !skip('weight')) this.fillWeights(offer.weights)
+    if (!skip('loadDate')) this.pickLoadDate(10)
+    if (offer.comments) this.commentsField().type(offer.comments)
+    if (offer.salePeriod) this.salePeriodField().clear().type(offer.salePeriod)
+    if (offer.weighing) this.chooseRadio(offer.weighing)
+    if (offer.shrinkage) this.shrinkageField().clear().type(offer.shrinkage)
+    if (offer.freight) this.chooseRadio(offer.freight)
+    return cy.wrap(offer)
+  }
+
+  // Typing the date does not work (the field strips the separators and the form keeps rejecting it):
+  // pick the day in the date picker, going to the next month when the target day is not in the shown one.
+  pickLoadDate(daysAhead) {
+    const target = new Date(Date.now() + daysAhead * 24 * 60 * 60 * 1000)
+    this.loadDateField().click()
+    this.datepickerTitle().then(($title) => {
+      const shownMonth = $title.text().trim().toLowerCase()
+      const monthName = target.toLocaleDateString('es-AR', { month: 'long' }).toLowerCase()
+      if (!shownMonth.includes(monthName)) this.datepickerNext().click()
+    })
+    this.datepickerDay(target.getDate()).click()
+    return this.loadDateField().should('not.have.value', '')
+  }
+
+  // The "Agregar otra raza" button only adds a row after the previous breed is chosen.
+  selectBreeds(breeds) {
+    breeds.forEach((breed, index) => {
+      if (index > 0) this.addBreedButton().click()
+      this.breedSelectAt(index).select(breed)
+    })
+  }
+
+  fillWeights({ min, max, avg }) {
+    if (min) this.minWeightField().clear().type(min)
+    if (max) this.maxWeightField().clear().type(max)
+    if (avg) this.averageWeightField().clear().type(avg)
+  }
+
+  // Yields the names/ids of the visible controls, to compare the form between categories.
+  visibleControlNames() {
+    return cy.get(VISIBLE_CONTROLS).then(($controls) =>
+      [...$controls].map((control) => control.name || control.id || `for:${control.htmlFor}`))
+  }
+
+  assertVisibleRequiredMessageCount(count) {
+    return cy.get('body').should(($body) => {
+      // Compare numbers, not the jQuery collection: a failing assertion would serialize the whole DOM.
+      const messages = [...$body.find('.alert_input_faltante:visible')].map((node) => node.textContent.trim())
+      expect(messages.length, `visible required messages: ${messages.join(' | ')}`).to.eq(count)
+    })
+  }
+
+  // Exactly these required fields are reported (the rest of the form was accepted).
+  assertOnlyRequiredMessages(labels) {
+    return cy.get('body').should(($body) => {
+      const shown = [...$body.find('.alert_input_faltante:visible')].map((node) => node.textContent.trim().replace('Debe completar el campo ', ''))
+      expect(shown.sort(), 'reported required fields').to.deep.eq([...labels].sort())
+    })
+  }
+
+  assertRequiredMessage(label) {
+    return this.requiredMessages().contains(MESSAGES.required(label)).should('be.visible')
+  }
+
+  assertNoRequiredMessage(label) {
+    return cy.get('body').should(($body) => {
+      const visible = [...$body.find('.alert_input_faltante:visible')].map((node) => node.textContent.trim())
+      expect(visible, `required messages (no "${label}")`).to.not.include(MESSAGES.required(label))
+    })
+  }
+
+  selectedCategoryName() {
+    return this.categorySelect().find('option:selected').invoke('text').then((text) => text.trim())
+  }
+
+  // Real choices only: the "Seleccionar" placeholder is left out.
+  breedOptionNames() {
+    return this.breedSelectAt(0).find('option').then(($options) =>
+      [...$options].map((option) => option.textContent.trim()).filter((name) => name !== 'Seleccionar'))
+  }
+
+  // Keeps the chosen society/establishment names in aliases for the Admin legajo check.
+  captureSelectedLocation() {
+    this.selectedSocietyName().as('submittedSociety')
+    this.selectedEstablishmentName().as('submittedEstablishment')
+  }
+
+  assertNoConfinementDays() {
+    return cy.get('body').should(($body) => {
+      expect($body.find("input[name='ng_dias_encierre']:visible").length, 'visible confinement days fields').to.eq(0)
+    })
+  }
+
+  assertOfferFormStillShown() {
+    this.offerTitle().should('be.visible')
+    // The confirmation text exists hidden in the page markup: only a visible one means the tropa was created.
+    return cy.get('body').should(($body) => {
+      const shown = [...$body.find('*:visible')].some((node) => node.children.length === 0 && node.textContent.includes(MESSAGES.confirmation))
+      expect(shown, 'confirmation visible').to.eq(false)
+    })
+  }
+
+  // The upload buttons first create a partial lot, whose id lands in the hidden #ng_id; attaching the file
+  // earlier would upload to no lot. They also need a society chosen (otherwise the page shows an alert).
+  waitForPartialLot() {
+    return this.lotIdField().should('not.have.value', '')
+  }
+
+  attachVideo(file) {
+    this.videoButton().click()
+    this.waitForPartialLot()
+    return this.videoFileInput().selectFile(file, { force: true })
+  }
+
+  assertVideoRejected() {
+    return cy.get('body', { timeout: VIDEO_RESULT_TIMEOUT }).should('contain.text', MESSAGES.videoRejected)
+  }
+
+    attachWeighingSheet(file) {
+    this.weighingSheetButton().click()
+    this.waitForPartialLot()
+    return this.weighingSheetInput().selectFile({ ...file, contents: Cypress.Buffer.from(file.contents, file.encoding) }, { force: true })
+  }
+
+  assertWeighingSheetLinkOpensNewTab() {
+    // Numbers/strings only: a failing assertion on the jQuery collection would serialize the whole page.
+    return this.weighingSheetLink(UPLOAD_RESULT_TIMEOUT).should(($links) => {
+      expect($links.length, 'weighing sheet links').to.be.at.least(1)
+      expect($links[0].getAttribute('target'), 'link target').to.eq('_blank')
+    })
+  }
+
+  // Pending-publication card in the React view; the id comes from the lot request.
+  assertPendingOffer(lot, { category, weight }) {
+    cy.origin(REACT_ORIGIN, { args: { lot: String(lot), category, weight } }, ({ lot, category, weight }) => {
+      cy.get('a[href="/operacion/faena/venta/pendiente-publicacion"]', { timeout: 60000 })
+        .filter(':visible').first().should('be.visible')
+      cy.contains(`#${lot}`, { timeout: 60000 }).should('be.visible')
+      cy.get('main').should('contain', category).and('contain', `${weight} Kg`)
+    })
   }
 
   submitEmptyOffer() {
@@ -166,15 +445,7 @@ class FaenaOfferPage {
   }
 
   submitOffer() {
-    return cy.get('div._boot.btn_agregar_listado.env').contains('Ofrecer tropa').click()
-  }
-
-  confirmationMessage() {
-    return cy.contains('Su tropa ha sido creada correctamente')
-  }
-
-  operationsLink() {
-    return cy.get('a').contains(/^operaciones$/)
+    return this.submitButton().click()
   }
 }
 

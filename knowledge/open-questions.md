@@ -2,6 +2,8 @@
 
 Estas preguntas deben resolverse con Producto, Desarrollo o una fuente funcional adicional. Los agentes no deben inventar respuestas.
 
+## Abiertas
+
 - `OQ-001`: ¿Cuál es el procedimiento completo para crear clientes?
 - `OQ-002`: ¿Admin corresponde siempre al permiso 4 y CR siempre al 6? ¿Qué excepciones existen?
 - `OQ-003`: ¿Qué permiso concreto habilita a un Admin para editar el CR de una sociedad?
@@ -39,3 +41,42 @@ Estas preguntas deben resolverse con Producto, Desarrollo o una fuente funcional
 - `OQ-035`: Cuando Balanza es “Balanza del Establecimiento”, ¿Distancia a la balanza debe ocultarse, quedar opcional o enviarse con un valor distinto de cero?
 - `OQ-036`: ¿Las fechas de destete/capado y los campos no solicitados que llegan vacíos al legajo se eliminaron para todas las categorías React o sólo para los escenarios documentados?
 - `OQ-037`: Para categorías preñadas con Servicio natural, ¿Origen de los toros está implementado en React y se persiste correctamente en el legajo?
+- `OQ-038`: ¿Por qué Administrador y Asociado comercial ingresan a `/` (shell `Admin DCAC ->`) y Cliente y Agente a `/__dcac/`? ¿Qué ocurre al abrir la URL de otro rol? (`knowledge/login-dcac-exploration.md`; relacionada con `OQ-002` y `OQ-004`)
+- `OQ-039`: ¿Es intencional la grafía `Direcion` en `Direcion de email no valida.`?
+- `OQ-040`: ¿El ítem `Clientes` visible para el Agente y la ausencia de `DCP REACT` son comportamiento esperado o dependen de la configuración de la cuenta?
+- `OQ-041`: ¿Qué alcance de datos corresponde al Asociado comercial? Se observaron contadores de Invernada/Faena muy altos frente a pocas sociedades visibles.
+- `OQ-042`: ¿Cómo debe automatizarse el login en `https://cliente-stage.dcac.ar/`? `cy.visit('/__dcac/')` termina en `/__dcac/login` (landing pública) y el formulario queda dentro de `#modalLogin` (`display: none`), que se abre con el botón INGRESAR (selector sin observar); en `stage.dcac.ar` el formulario ya está visible. Sin cambios de automatización; consideración para un release futuro. Evidencia: `artifacts/cypress/screenshots/login/`.
+- `OQ-043`: En invernada legacy, ¿`MEJ` debe mostrar sólo los campos comunes o campos propios? Reproducido a mano por el usuario (2026-10-08): no agrega campos; posible bug, pendiente con el líder. Relacionada con `TC-INV-003` y el Caso 46 de `config/ofrecimientos-invernada-cases.md`.
+- `OQ-048`: ¿El alta de sociedad con CUIT inválido debe mostrar un mensaje? El modal queda abierto sin mensaje (caso 4). El usuario (2026-10-09): la validación es por API, la UI no lo muestra y lo reportará como defecto.
+- `OQ-049`: ¿Es intencional que los mensajes `.alert_input_faltante` de un envío previo no se limpien al corregir los campos hasta recargar?
+- `OQ-050`: ¿Qué campos debe mostrar "¿Desea informar el plan sanitario?" = Sí? No se observó ningún campo nuevo (caso 68).
+- `OQ-051`: ¿Cuál es la regla real de duración y formato del video legacy? 29 s y 9 s se aceptan; 4 s y un `.txt` se rechazan con "Aún no se han cargado archivos, compruebe que el formato sea el correcto." El 4 s falla por una excepción de AWS MediaConvert, no por una regla con mensaje propio. ¿Cuál es el mínimo real entre 4 y 9 s?
+- `OQ-052`: ¿Es esperado que sin sociedad y establecimiento el POST parcial de video devuelva un error SQL con "Archivo cargado" y que `upload.php` exponga un stack trace con rutas internas?
+- `OQ-053`: ¿En qué condición se dispara `#modal_siguiente` ("El video no ha terminado de cargarse")? No se disparó con la subida en curso.
+- `OQ-054`: ¿Debería poder buscarse por id en Pendientes y Publicadas, como en Cerradas? ¿Por qué la búsqueda en Cerradas devuelve siempre `#11854`?
+- `OQ-055`: ¿Los lotes parciales que crea "Adjuntar Filmación" y no se envían deben limpiarse?
+- `OQ-056`: ¿El plazo de venta debería verse en el informe de la tropa? Hoy no se muestra.
+- `OQ-062`: Para Pesada Carguío se cargó la opción `#sociedad` y el legajo muestra "Sociedad Rural". ¿Es el nombre esperado de la opción? Evidencia: legajo #35686. **Pendiente: el usuario lo confirma con su líder.**
+- `OQ-067`: En `https://cliente-php8-upgrade.dcac.ar/` (2026-10-21) el alta de sociedad del formulario legacy no se completa: al aceptar `#aceptarSug`, la petición `GET /MODULOS/modulo_gruposociedades/index.php?saveSociedad=1&...` devolvió HTTP 500 y la sociedad nueva no quedó seleccionada (el select sigue en "+ Nueva Sociedad"). Falla `TC-INV-015`; en stage ese caso pasa. ¿Es un defecto del ambiente php8-upgrade o una diferencia esperada? Estado `UNKNOWN` hasta analizarlo con Desarrollo. Evidencia: `artifacts/cypress/screenshots/ofrecimientos-invernada-sociedad-establecimiento.cy.js/` (TC-INV-015 failed). Además, ese ambiente devolvió 502/503 intermitentes al abrir `/__dcac/`.
+- `OQ-068`: En php8-upgrade el login abre en un popup (`#btn_login` → `#modalLogin`) y el campo de email pierde caracteres al tipear (p. ej. `dcac-73820@…` quedó `dca820@…`/`dac-73820@…`) por el foco del popup. La automatización espera la apertura del popup, tipea con delay y verifica el valor; ¿el comportamiento del campo es esperado? Relacionada con `OQ-042`.
+
+## Respondidas / superadas
+
+| ID | Respuesta (fuente) |
+|---|---|
+| `OQ-044` | Sin validación de Cantidad `0`/negativa hoy (`0` y `-5` crearon #35415, #35416); casos 15 y 16 diferidos hasta que la app la implemente (usuario, 2026-10-09). |
+| `OQ-045` | Sin validación Cabeza + Cuerpo + Cola contra la Cantidad (suma 42 con Cantidad 50 se acepta); caso 21 diferido (usuario, 2026-10-09). |
+| `OQ-046` | Sin validación Machos + Hembras contra la Cantidad (20 + 20 con 50 se acepta); caso 67 diferido (usuario, 2026-10-09). |
+| `OQ-047` | Superada por `OQ-051`: la observación del 08/10 no usó el flujo real del botón. |
+| `OQ-057` | Una fecha no cargada se muestra `00/00/0000` (QA, 2026-10-13). |
+| `OQ-058` | El legajo muestra valores por defecto en los campos no cargados (Edad 0, Peso 0, Destetados/Capados "No", Zona "Limpia", Trat. Nutricional "Sin datos", Dentición "No especificado", Tipo Rodeo "-", Pesada Carguío "No Especificado", fechas `00/00/0000`): es lo esperado (QA, 2026-10-13; #35685, #35687). |
+| `OQ-059` | El peso no cargado se ve "0 Kg" en listado y legajo (QA, 2026-10-13). |
+| `OQ-060` | "Fecha Revisación: 00/00/0000 a las 00:00" es el formato esperado en una tropa sin revisar (QA, 2026-10-13). |
+| `OQ-061` | El legajo muestra todos los campos, estén cargados o no; es error que aparezca un campo ajeno a la categoría (p. ej. "Capados: Sí" en Terneras). El informe de Pendientes difiere del legajo (sin aclaración, Plazo, Descarte, Tipo de Rodeo, cría ni video; muestra "Cantidad crías machos/hembras" y Fecha/Raza de Servicio en Vacas con cría) (QA, 2026-10-13). |
+| `OQ-063` | "Oculto" es lo esperado: el video genera 1 video + 6 imágenes, todos "Oculto"; luego el Admin clickea las imágenes para hacerlas visibles en la publicación (QA, 2026-10-13). |
+| `OQ-064` | La diferencia de capitalización de la sociedad entre listado y legajo es aceptada (QA, 2026-10-13). |
+| `OQ-065` | El buscador no cambia la URL: esperado. No es exclusivo de tropaId, pero igual se valida el ingreso al legajo desde ahí (QA, 2026-10-13). |
+| `OQ-069` | Faena legacy: el peso promedio (`ng_peso`) es el único obligatorio de los tres campos de peso; el mínimo y el máximo solos no alcanzan (confirmado por el usuario 2026-11-17). |
+| `OQ-070` | Faena legacy: el mensaje `Debe completar el campo Disponibilidad de Carga` sí es visible (confirmado por el usuario y por Cypress 2026-11-17; la fecha se elige en el datepicker). |
+| `OQ-071` | Faena legacy: el video de 4 s es rechazado con `Aún no se han cargado archivos, compruebe que el formato sea el correcto.`; requiere sociedad elegida y primero crea un lote parcial (`#ng_id`). Planilla de pesada: queda un enlace `target=_blank`. |
+| `OQ-066` | La búsqueda y casi toda la página son lentas; en Ofrecimientos se ven primero las más nuevas (no en todos los estados). Hay un solo buscador y ya está cubierto (QA, 2026-10-13). |
