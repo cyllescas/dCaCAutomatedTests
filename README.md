@@ -10,6 +10,7 @@ bajo `cypress/` se extiende, no se reemplaza.
 | --- | --- | --- |
 | [Node.js](https://nodejs.org/) LTS (con npm) | Todo el proyecto | Instalador oficial |
 | Dependencias del proyecto | Cypress, Playwright, dotenv | `npm install` en la raíz |
+| Plugin `@cypress/grep` (v4) | **Requisito para filtrar por tags** (`npm run test:smoke`, `test:regression`, `test:sanity`) | Ya está en `devDependencies`; se instala con `npm install`. Sin él los tags se ignoran y se ejecuta **toda** la suite |
 | Binario de Cypress | Correr las pruebas | Se baja con `npm install`; si falta: `npx cypress install` |
 | Navegador de Playwright | Exploración con Claude (MCP) | `npx playwright install chromium` |
 | [Claude Code](https://claude.com/claude-code) CLI | Flujo agentic (`/qa-flow`) | Ver documentación de Claude Code; no hace falta para sólo correr Cypress |
@@ -35,6 +36,19 @@ USER_COMMERCIAL_PARTNER=...      # Asociado comercial
 
 `cypress.config.js` también acepta los nombres `TEST_<ROL>_USERNAME` / `TEST_<ROL>_PASSWORD`.
 
+### Validación de Google en stage (exploración con Claude)
+
+`stage.dcac.ar` pasa por una validación de Google (`auth.dcac.ar`) que el navegador de exploración no
+puede resolver solo. Mientras no haya un acceso de QA, hacer el login manual una vez:
+
+```bash
+node scripts/save-auth-state.cjs   # abre un navegador: iniciá sesión con Google vos mismo
+```
+
+Guarda las cookies en `artifacts/auth-state.json` (ignorado por Git; no compartir) y el lanzador del
+MCP (`scripts/run-playwright-mcp.cjs`) las usa si existe. Después reiniciar el MCP con `/mcp`. Si la
+sesión vence, repetir el comando.
+
 ### Videos de prueba (no versionados)
 
 `cypress/fixtures/*.mp4` está ignorado por Git: cada persona debe tener en su máquina
@@ -45,11 +59,28 @@ Se puede usar otra ruta con `INVERNADA_VIDEO_PATH` e `INVERNADA_VIDEO_SHORT_PATH
 
 ```bash
 npm test                          # toda la suite (cypress run)
-npm run test:regression           # sólo @regression (también test:smoke, test:sanity)
+npm run test:regression           # sólo @regression (también test:smoke, test:sanity), requiere @cypress/grep
 npx cypress open                  # modo interactivo
 npx cypress run --spec "cypress/e2e/ofrecimientos-invernada-legajo-admin/*.cy.js"
 npm run qa:validate               # valida contratos config/ ↔ specs/ ↔ cypress/
 ```
+
+### Filtrado por tags
+
+Los tags van en el título del `describe` (`@smoke`, `@regression`, `@sanity`, `@invernada`, `@admin`,
+`@e2e`...) y se filtran por título con `@cypress/grep` (variable `grep`, **no** `grepTags`: esa solo lee
+tags declarados como `{ tags: [...] }`). El plugin está registrado en `cypress/support/e2e.js` y en
+`setupNodeEvents` de `cypress.config.js`. Los scripts `test:*` agregan `grepFilterSpecs=true`, así que
+solo se abren los specs con tests que coinciden. Para filtrar a mano:
+
+```bash
+npx cypress run --env grep=@invernada,grepFilterSpecs=true        # un tag
+npx cypress run --env 'grep=@smoke; @sanity',grepFilterSpecs=true  # uno u otro (separados por ;)
+npx cypress run --env grep="login"                                 # por texto del título
+```
+
+Los specs que crean tropas reales (`ofrecimientos-invernada-envio` es `@regression`; el e2e del
+legajo no tiene `@smoke` ni `@regression`) no deben llevar `@smoke`.
 
 El flujo e2e `ofrecimientos-invernada-legajo-admin` **crea tropas reales en stage** (4 por corrida
 completa, sin borrarlas). Para correr sólo algunos flujos: `--env INVERNADA_LEGAJO_FLOWS=...`.
