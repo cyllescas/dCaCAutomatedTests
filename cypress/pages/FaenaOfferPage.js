@@ -2,6 +2,7 @@ import { MESSAGES } from '../support/data/faena_offer_data'
 
 const VISIBLE_CONTROLS = 'input:visible, select:visible, textarea:visible, label[for]:visible'
 const VIDEO_RESULT_TIMEOUT = 90000
+const UPLOAD_RESULT_TIMEOUT = 60000
 const REACT_ORIGIN = 'https://react-stage.dcac.ar'
 
 class FaenaOfferPage {
@@ -128,6 +129,10 @@ class FaenaOfferPage {
     return cy.get('.alert_input_faltante')
   }
 
+  lotIdField() {
+    return cy.get('#ng_id', { timeout: UPLOAD_RESULT_TIMEOUT })
+  }
+
   videoButton() {
     return cy.get('input[type=button].btn_subir_video')
   }
@@ -148,8 +153,8 @@ class FaenaOfferPage {
     return cy.get('#selPlanilla')
   }
 
-  weighingSheetLink() {
-    return cy.get("a[target='_blank'][href^='/documentos/?ver=1&arch=']")
+  weighingSheetLink(timeout) {
+    return cy.get("a[target='_blank'][href^='/documentos/?ver=1&arch=']", { timeout })
   }
 
   // ── Métodos ──
@@ -270,7 +275,9 @@ class FaenaOfferPage {
 
   assertVisibleRequiredMessageCount(count) {
     return cy.get('body').should(($body) => {
-      expect($body.find('.alert_input_faltante:visible'), 'visible required messages').to.have.length(count)
+      // Compare numbers, not the jQuery collection: a failing assertion would serialize the whole DOM.
+      const messages = [...$body.find('.alert_input_faltante:visible')].map((node) => node.textContent.trim())
+      expect(messages.length, `visible required messages: ${messages.join(' | ')}`).to.eq(count)
     })
   }
 
@@ -303,17 +310,28 @@ class FaenaOfferPage {
 
   assertNoConfinementDays() {
     return cy.get('body').should(($body) => {
-      expect($body.find("input[name='ng_dias_encierre']:visible"), 'confinement days field').to.have.length(0)
+      expect($body.find("input[name='ng_dias_encierre']:visible").length, 'visible confinement days fields').to.eq(0)
     })
   }
 
   assertOfferFormStillShown() {
     this.offerTitle().should('be.visible')
-    return cy.get('body').should('not.contain.text', MESSAGES.confirmation)
+    // The confirmation text exists hidden in the page markup: only a visible one means the tropa was created.
+    return cy.get('body').should(($body) => {
+      const shown = [...$body.find('*:visible')].some((node) => node.children.length === 0 && node.textContent.includes(MESSAGES.confirmation))
+      expect(shown, 'confirmation visible').to.eq(false)
+    })
+  }
+
+  // The upload buttons first create a partial lot, whose id lands in the hidden #ng_id; attaching the file
+  // earlier would upload to no lot. They also need a society chosen (otherwise the page shows an alert).
+  waitForPartialLot() {
+    return this.lotIdField().should('not.have.value', '')
   }
 
   attachVideo(file) {
     this.videoButton().click()
+    this.waitForPartialLot()
     return this.videoFileInput().selectFile(file, { force: true })
   }
 
@@ -321,13 +339,18 @@ class FaenaOfferPage {
     return cy.get('body', { timeout: VIDEO_RESULT_TIMEOUT }).should('contain.text', MESSAGES.videoRejected)
   }
 
-  attachWeighingSheet(file) {
+    attachWeighingSheet(file) {
+    this.weighingSheetButton().click()
+    this.waitForPartialLot()
     return this.weighingSheetInput().selectFile({ ...file, contents: Cypress.Buffer.from(file.contents, file.encoding) }, { force: true })
   }
 
   assertWeighingSheetLinkOpensNewTab() {
-    this.weighingSheetLink().should('have.length.at.least', 1)
-    return this.weighingSheetLink().first().should('have.attr', 'target', '_blank')
+    // Numbers/strings only: a failing assertion on the jQuery collection would serialize the whole page.
+    return this.weighingSheetLink(UPLOAD_RESULT_TIMEOUT).should(($links) => {
+      expect($links.length, 'weighing sheet links').to.be.at.least(1)
+      expect($links[0].getAttribute('target'), 'link target').to.eq('_blank')
+    })
   }
 
   // Pending-publication card in the React view; the id comes from the lot request.
