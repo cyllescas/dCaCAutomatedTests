@@ -8,16 +8,50 @@ const REACT_ORIGIN = 'https://react-stage.dcac.ar'
 class FaenaOfferPage {
   // ── Selectores ──
 
-  societySelect() {
-    return cy.get('#sociedad_select')
+  // `options` (e.g. { timeout }) is optional; existing calls without it keep the default behaviour.
+  societySelect(options) {
+    return cy.get('#sociedad_select', options)
   }
 
   establishmentSelect() {
     return cy.get("select[name='ng_establecimiento']")
   }
 
-  establishmentMenu() {
-    return cy.get('#estab')
+  establishmentMenu(options) {
+    return cy.get('#estab', options)
+  }
+
+  // ── Representante (USER_AGENT) only, observed 2026-11-25 ──
+  // `#idClienteRepresentante` also exists in the Invernada form: always scope it to #send-pasos.
+
+  clientSelect(options) {
+    return cy.get('#send-pasos #idClienteRepresentante', options)
+  }
+
+  // The native select is enhanced by select2 (`select2-hidden-accessible`, aria-hidden), so the header
+  // `#top_line` covers it for Cypress. Select on the native element with force: Cypress still dispatches
+  // `change`, so the inline onchange (setCliente) runs and loads the client's societies.
+  chooseClient(valueOrText) {
+    return this.clientSelect().select(valueOrText, { force: true })
+  }
+
+  // Never clicked: it opens the new client flow.
+  newClientButton() {
+    return cy.get('#send-pasos .agr_cliente')
+  }
+
+  societyRequiredMessage() {
+    return cy.get('.alert_input_faltante.required-ng_sociedad_vendedora')
+  }
+
+  establishmentRequiredMessage() {
+    return cy.get('.alert_input_faltante.required-ng_establecimiento')
+  }
+
+  assertEstablishmentMenuHidden() {
+    return cy.get('body').should(($body) => {
+      expect($body.find('#estab:visible').length, 'visible establishment selects').to.eq(0)
+    })
   }
 
   newSocietyNameField() {

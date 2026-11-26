@@ -22,6 +22,7 @@ Esta carpeta contiene conocimiento funcional normalizado para agentes de QA. La 
 | `invernada.md` | Tropas, estados, cotizaciones y CI de invernada |
 | `faena.md` | Tropas, estados, cotizaciones y CI de faena |
 | `ofrecimientos-migracion.md` | Matriz de campos legacy, campos dinámicos y delta React/legacy de ofrecimientos |
+| `representante-exploration.md` | Navegación del Representante, página Clientes y cascada Cliente → Sociedad → Establecimiento (exploración 2026-11-25) |
 | `viaje-inmediato.md` | Asignación, visibilidad y carga CSV de Viaje Inmediato |
 | `shared-business-rules.md` | Reglas transversales a cotizaciones y compras inmediatas |
 | `other-domains.md` | MAG, transportes y dominios mencionados sin detalle |

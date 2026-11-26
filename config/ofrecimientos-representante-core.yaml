@@ -1,0 +1,93 @@
+# Iteración 1: Diferencias de navegación del rol Representante (AGT-07)
+# y selección en cascada Cliente -> Sociedad -> Establecimiento (AGT-01).
+
+feature:
+  id: ofrecimientos-representante-core
+  name: Representante — Navegación del rol y selección en cascada
+  description: >-
+    Validación de las vistas y permisos exclusivos del usuario Representante (USER_AGENT)
+    en comparación con el Cliente (acceso a Clientes en /__dcac/misClientes y deCampoPagos),
+    y validación del selector en cascada Cliente -> Sociedad -> Establecimiento en los
+    formularios de ofrecimiento (Faena e Invernada legacy).
+  objective: >-
+    Confirmar que el usuario Representante visualiza las secciones propias de su rol,
+    actualizar la regla de negocio sobre múltiples representantes por sociedad en knowledge/,
+    y verificar que al seleccionar un Cliente en el formulario de ofrecimiento se listan todas
+    sus sociedades y, al elegir una sociedad, todos sus establecimientos.
+
+  sut:
+    base_url: https://stage.dcac.ar/
+
+  knowledge:
+    - knowledge/README.md
+    - knowledge/open-questions.md
+    - knowledge/users-and-permissions.md
+    - knowledge/companies.md
+    - knowledge/shared-business-rules.md
+    - knowledge/faena.md
+    - knowledge/invernada.md
+
+  scope:
+    include:
+      - AGT-07: Verificar navegación y accesos propios del rol Representante (/ __dcac/misClientes y acceso a deCampoPagos/DCP) frente al rol Cliente.
+      - AGT-07: Documentar en knowledge/ (corrigiendo BR-USR-013) que una sociedad puede tener varios representantes y que la regla "Sociedades en la que participa" aplica solo a DCP y no a ofrecimientos.
+      - AGT-01: Validar la cascada Cliente -> Sociedad -> Establecimiento en el formulario de ofrecimiento de Faena legacy.
+      - AGT-01: Validar la cascada Cliente -> Sociedad -> Establecimiento en el formulario de ofrecimiento de Invernada legacy.
+    exclude:
+      - Envío real de ofrecimientos o creación de tropas en stage (se cubre en iteraciones posteriores).
+      - Flujo de Faena React (stretch AGT-04).
+      - Flujos internos transaccionales dentro de deCampoPagos (DCP).
+      - Envíos de correos electrónicos, Matomo y aplicación móvil.
+
+  preconditions:
+    - Explorar autenticado con el rol Representante (PLAYWRIGHT_MCP_LOGIN_ROLE=agent / USER_AGENT).
+    - El usuario representante debe tener al menos un cliente asignado con sociedades y establecimientos activos en stage.
+    - Sesión de Google activa en artifacts/auth-state.json.
+    - Reutilizar los Page Objects existentes (MainAgentPage.js, FaenaOfferPage.js, InvernadaOfferPage.js) extendiéndolos sin duplicar selectores.
+
+  exploration:
+    coverage:
+      - positive
+      - validation
+      - dependency
+      - permission
+      - navigation
+
+  automation:
+    functional_area: ofrecimientos-representante
+    suites:
+      - regression
+    tags:
+      - "@representante"
+      - "@agent"
+    data_policy:
+      - Usar variables de entorno (USER_AGENT, PASSWORD) y datos dinámicos observados en runtime.
+      - No hardcodear credenciales, secretos, nombres de clientes/sociedades reales ni IDs en los specs.
+      - Caja negra estricta: prohibido usar APIs privadas, base de datos o cy.request. cy.intercept solo en modo pasivo.
+      - Guardar screenshots, videos y reportes bajo artifacts/.
+
+  discovery_contract:
+    required_outputs:
+      - field_inventory
+      - validation_matrix
+      - dependency_matrix
+      - combination_matrix
+      - selector_inventory
+      - evidence_index
+    required_case_types:
+      - positive
+      - validation
+      - data-integrity
+      - permission
+      - navigation
+
+  automation_contract:
+    require_case_for_each_include: true
+    require_test_for_each_automatable_case: true
+    forbid_unobserved_selectors: true
+    allowed_unautomated_reasons:
+      - manual_only
+      - blocked_by_open_question
+      - missing_authorized_data
+      - missing_observed_selector
+      - out_of_scope

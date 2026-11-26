@@ -24,6 +24,7 @@ Observaciones de interfaz; no son una matriz de permisos (`OQ-002`, `OQ-004`, `O
 
 - `MAP-LOGIN-001`, Cliente: URL `/__dcac/`, título `Inicio`; barra superior con menú de usuario y navegación con `Comprar`, `Cotizar` y `DCP REACT`.
 - `MAP-LOGIN-002`, Agente: URL `/__dcac/`, título `Inicio`; igual que Cliente más el ítem `Clientes`, y sin `DCP REACT`.
+  - Nueva observación 2026-11-25: `DCP REACT` **sí** se vio para el Representante, junto con el acceso DCP `#btn_pagar`. Se conserva la entrada original; ver `MAP-AGT-001` en `knowledge/representante-exploration.md` y `OQ-072`.
 - `MAP-LOGIN-003`, Administrador: URL `/`, título `Admin DCAC ->`; barra de administración y tablero de actividad.
 - `MAP-LOGIN-004`, Asociado comercial: URL `/`, título `Admin DCAC ->`; mismo shell que Administrador, sin tablero de actividad y con la sección `Gestión Sociedades`.
 

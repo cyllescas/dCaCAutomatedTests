@@ -39,6 +39,58 @@ class InvernadaOfferPage {
     return cy.get('#categoriasSelect')
   }
 
+  // ── Representante (USER_AGENT) only, observed 2026-11-25 ──
+  // `#idClienteRepresentante` also exists in the Faena form: always scope it to #send-pasos-inv.
+
+  clientSelect(options) {
+    return cy.get('#send-pasos-inv #idClienteRepresentante', options)
+  }
+
+  // The native select is enhanced by select2 (`select2-hidden-accessible`, aria-hidden), so the header
+  // `#top_line` covers it for Cypress. Select on the native element with force: Cypress still dispatches
+  // `change`, so the inline onchange (setCliente) runs and loads the client's societies.
+  chooseClient(valueOrText) {
+    return this.clientSelect().select(valueOrText, { force: true })
+  }
+
+  // Never clicked: it opens the new client flow.
+  newClientButton() {
+    return cy.get('#send-pasos-inv .agr_cliente')
+  }
+
+  societyRequiredMessage() {
+    return cy.get('.alert_input_faltante.required-re_sociedad_vendedora')
+  }
+
+  establishmentRequiredMessage() {
+    return cy.get('.alert_input_faltante.required-re_establecimiento')
+  }
+
+  categoryRequiredMessage() {
+    return cy.get('.alert_input_faltante.required-re_categoria')
+  }
+
+  saleTermRequiredMessage() {
+    return cy.get('.alert_input_faltante.required-in_plazo_select')
+  }
+
+  // A visible `.alert_input_faltante` reads "Debe completar el campo <label>" (used for Raza, whose class
+  // was not inventoried).
+  assertVisibleRequiredMessage(label) {
+    const expected = `Debe completar el campo ${label}`
+    return cy.get('body').should(($body) => {
+      const shown = [...$body.find('.alert_input_faltante:visible')].map((node) => normalize(node.textContent))
+      const found = shown.some((text) => text.includes(normalize(expected)))
+      expect(found, `visible required message "${expected}"`).to.eq(true)
+    })
+  }
+
+  assertEstablishmentHidden() {
+    return cy.get('body').should(($body) => {
+      expect($body.find('#estab_soc:visible').length, 'visible establishment selects').to.eq(0)
+    })
+  }
+
   field(name) {
     return cy.get(`[name="${name}"]`)
   }

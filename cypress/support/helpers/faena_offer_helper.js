@@ -4,6 +4,16 @@ import MainClientPage from '../../pages/MainClientPage'
 import OfferPage from '../../pages/OfferPage'
 import { loginWithSession, verifyLoginSuccessAsAdmin, verifyLoginSuccessAsClient } from './login_helper'
 
+// Role-agnostic path of the legacy Faena form (also used by the Representante).
+export const FAENA_OFFER_PATH = '/__dcac/venderHacienda?solicitud_directo&rapido'
+
+// Walks the menu (Cotizar > Faena) from an authenticated home, for any role.
+export function openFaenaOfferForm() {
+  MainClientPage.mainCotizarButton().click()
+  OfferPage.offerFaenaButton().click()
+  FaenaOfferPage.offerTitle().should('be.visible')
+}
+
 const LOT_ENDPOINT = '**/MODULOS/directo/modulo_crearLote/index.php*'
 const OFFER_LOT_ALIAS = 'faenaOfferLot'
 // The Admin lives at the site root: /__dcac/ shows the client home even for the admin user.
